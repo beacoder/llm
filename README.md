@@ -39,7 +39,7 @@
 
 # replace graphrag library with modified_graphrag from mistral/qwen2.5 accordingly
 
-# finetuned extract prompt has been provied, if you want to genenrate by yourself, run ./bin/prompt_tuning
+# finetuned prompt has been provided, if you wanna do it yourself, run ./bin/prompt_tuning
 
 ~/workspace/ai$ ./bin/graphrag_index
 ```
@@ -49,7 +49,7 @@
 ```bash
 ~/workspace/ai$ ./bin/local_query "这个章节中，西门庆有几个老婆，他们的关系如何?"
 
-# NOTE: global_query is not working is not working due to graphrag codes
+# NOTE: global_query is not working due to graphrag code broken
 ```
 
 4. Run normal RAG to analyze and search for JinPingMei：
