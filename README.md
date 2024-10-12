@@ -25,7 +25,7 @@
 1. Create a virtual environment and install the required packages:
 
 ```bash
-~/workspace/ai$ ./bin/run_ollama python3 -m venv test_env
+~/workspace/ai$ python3 -m venv test_env
 ~/workspace/ai$ source test_env/bin/activate
 ~/workspace/ai$ pip install -r llm/graphrag/test_env/requirements.txt
 ```
@@ -34,12 +34,10 @@
 
 ```bash
 ~/workspace/ai$ mkdir ~/workspace/ai/ragtest
+~/workspace/ai$ cp -rf llm/graphrag/ragtest ~/workspace/ai/ragtest
 
-# copy llm/graphrag/ragtest to ~/workspace/ai/ragtest
-
-# replace graphrag library with modified_graphrag from mistral/qwen2.5 accordingly
-
-# finetuned prompt has been provided, if you wanna do it yourself, run ./bin/prompt_tuning
+# apply changes in modified_graphrag to installed graphrag for mistral/qwen2.5 accordingly
+# NOTE: finetuned prompt has been provided, if you wanna do it yourself, run ./bin/prompt_tuning
 
 ~/workspace/ai$ ./bin/graphrag_index
 ```
@@ -55,8 +53,8 @@
 4. Run normal RAG to analyze and search for JinPingMei：
 
 ```bash
-~/workspace/ai$ ./bin/run_ollama python3 -m venv test_env
-~/workspace/ai$ source test_env/bin/activate
+~/workspace/ai$ python3 -m venv test_env2
+~/workspace/ai$ source test_env2/bin/activate
 ~/workspace/ai$ pip install -r llm/rag/test_env/requirements.txt
 
 ~/workspace/ai$ python bin/langchain_rag.py
