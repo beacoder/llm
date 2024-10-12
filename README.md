@@ -63,3 +63,7 @@
 ```
 
 5. Results
+
+![西门庆和潘金莲什么关系?](images/graphrag_sample1.png)
+![这个章节中，西门庆有几个老婆，他们的关系如何?](images/graphrag_sample2.png)
+![这本书主要讲的是什么故事?](images/graphrag_sample3.png)
