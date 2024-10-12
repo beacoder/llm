@@ -27,7 +27,7 @@
 ```bash
 ~/workspace/ai$ python3 -m venv test_env
 ~/workspace/ai$ source test_env/bin/activate
-~/workspace/ai$ pip install -r llm/graphrag/test_env/requirements.txt
+~/workspace/ai$ pip install -r llm/graphrag/requirements.txt
 ```
 
 2. Run GraphRAG to analyze JinPingMei:
@@ -55,7 +55,7 @@
 ```bash
 ~/workspace/ai$ python3 -m venv test_env2
 ~/workspace/ai$ source test_env2/bin/activate
-~/workspace/ai$ pip install -r llm/rag/test_env/requirements.txt
+~/workspace/ai$ pip install -r llm/rag/requirements.txt
 
 ~/workspace/ai$ python bin/langchain_rag.py
 ```
