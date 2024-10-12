@@ -72,6 +72,7 @@ class LocalSearch(BaseSearch):
         )
         log.info("GENERATE ANSWER: %s. QUERY: %s", start_time, query)
         try:
+            # modification for returning better local search result
             search_prompt = self.system_prompt.format(
                 context=context_text, response_type=self.response_type,
                 question=query

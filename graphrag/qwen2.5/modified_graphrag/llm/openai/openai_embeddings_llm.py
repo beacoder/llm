@@ -33,6 +33,8 @@ class OpenAIEmbeddingsLLM(BaseLLM[EmbeddingInput, EmbeddingOutput]):
             "model": self.configuration.model,
             **(kwargs.get("model_parameters") or {}),
         }
+
+        # modification for qwen2.5 & nomic-embed-text
         embedding_list = []
         for inp in input:
             embedding = ollama.embeddings(model="nomic-embed-text", prompt=inp)

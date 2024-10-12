@@ -6,7 +6,7 @@
 LOCAL_SEARCH_SYSTEM_PROMPT = """
 ---Role---
 
-You are a helpful assistant responding to questions about data in the tables provided.
+You are a helpful assistant responding to questions about data in the context provided.
 
 
 ---Goal---
