@@ -50,7 +50,7 @@
 # NOTE: global_query is not working due to graphrag code broken
 ```
 
-4. Run normal RAG to analyze and search for JinPingMei：
+4. Run baseline RAG to analyze and search for JinPingMei：
 
 ```bash
 ~/workspace/ai$ python3 -m venv test_env2
