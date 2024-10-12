@@ -6,7 +6,7 @@
 import asyncio
 from collections.abc import Callable
 from typing import Any
-import ollama
+
 import numpy as np
 import tiktoken
 from tenacity import (
@@ -67,35 +67,59 @@ class OpenAIEmbedding(BaseTextEmbedding, OpenAILLMImpl):
         self.max_tokens = max_tokens
         self.token_encoder = tiktoken.get_encoding(self.encoding_name)
         self.retry_error_types = retry_error_types
-        self.embedding_dim = 384  # Nomic-embed-text model dimension
-        self.ollama_client = ollama.Client()
 
     def embed(self, text: str, **kwargs: Any) -> list[float]:
-        """Embed text using Ollama's nomic-embed-text model."""
-        try:
-            embedding = self.ollama_client.embeddings(model="nomic-embed-text", prompt=text)
-            return embedding["embedding"]
-        except Exception as e:
-            self._reporter.error(
-                message="Error embedding text",
-                details={self.__class__.__name__: str(e)},
-            )
-            return np.zeros(self.embedding_dim).tolist()
+        """
+        Embed text using OpenAI Embedding's sync function.
+
+        For text longer than max_tokens, chunk texts into max_tokens, embed each chunk, then combine using weighted average.
+        Please refer to: https://github.com/openai/openai-cookbook/blob/main/examples/Embedding_long_inputs.ipynb
+        """
+        token_chunks = chunk_text(
+            text=text, token_encoder=self.token_encoder, max_tokens=self.max_tokens
+        )
+        chunk_embeddings = []
+        chunk_lens = []
+        for chunk in token_chunks:
+            try:
+                embedding, chunk_len = self._embed_with_retry(chunk, **kwargs)
+                chunk_embeddings.append(embedding)
+                chunk_lens.append(chunk_len)
+            # TODO: catch a more specific exception
+            except Exception as e:  # noqa BLE001
+                self._reporter.error(
+                    message="Error embedding chunk",
+                    details={self.__class__.__name__: str(e)},
+                )
+
+                continue
+        chunk_embeddings = np.average(chunk_embeddings, axis=0, weights=chunk_lens)
+        chunk_embeddings = chunk_embeddings / np.linalg.norm(chunk_embeddings)
+        return chunk_embeddings.tolist()
 
     async def aembed(self, text: str, **kwargs: Any) -> list[float]:
-        """Embed text using Ollama's nomic-embed-text model asynchronously."""
-        try:
-            embedding = await self.ollama_client.embeddings(model="nomic-embed-text", prompt=text)
-            return embedding["embedding"]
-        except Exception as e:
-            self._reporter.error(
-                message="Error embedding text asynchronously",
-                details={self.__class__.__name__: str(e)},
-            )
-            return np.zeros(self.embedding_dim).tolist()
+        """
+        Embed text using OpenAI Embedding's async function.
+
+        For text longer than max_tokens, chunk texts into max_tokens, embed each chunk, then combine using weighted average.
+        """
+        token_chunks = chunk_text(
+            text=text, token_encoder=self.token_encoder, max_tokens=self.max_tokens
+        )
+        chunk_embeddings = []
+        chunk_lens = []
+        embedding_results = await asyncio.gather(*[
+            self._aembed_with_retry(chunk, **kwargs) for chunk in token_chunks
+        ])
+        embedding_results = [result for result in embedding_results if result[0]]
+        chunk_embeddings = [result[0] for result in embedding_results]
+        chunk_lens = [result[1] for result in embedding_results]
+        chunk_embeddings = np.average(chunk_embeddings, axis=0, weights=chunk_lens)  # type: ignore
+        chunk_embeddings = chunk_embeddings / np.linalg.norm(chunk_embeddings)
+        return chunk_embeddings.tolist()
 
     def _embed_with_retry(
-        self, text: str | tuple, **kwargs: Any  #str | tuple
+        self, text: str | tuple, **kwargs: Any
     ) -> tuple[list[float], int]:
         try:
             retryer = Retrying(
@@ -116,7 +140,7 @@ class OpenAIEmbedding(BaseTextEmbedding, OpenAILLMImpl):
                         .embedding
                         or []
                     )
-                    return (embedding["embedding"], len(text))
+                    return (embedding, len(text))
         except RetryError as e:
             self._reporter.error(
                 message="Error at embed_with_retry()",

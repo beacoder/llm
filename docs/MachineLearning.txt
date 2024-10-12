@@ -1,0 +1,155 @@
+Building Machine Learning Systems That Don't Suck
+A live, interactive program that'll help you build production-ready machine learning systems from the ground up.
+Check the schedulefor more details about upcoming cohorts.
+Register now
+Learn how to design, build, deploy, and scale machine learning systems to solve real-world problems.
+This is the best machine learning course I've done ever. Worth every cent. — Jose Reyes, AI/ML at Cevo Australia
+Building Machine Learning Systems That Don't Suck
+I'll lose my mind if I see another book or course teaching people the same basic ideas for the hundredth time.
+Most people are stuck in beginner mode, and finding help to solve real-world problems is hard.
+I want to change that.
+I started writing software 30 years ago. I've written pipelines and trained models for some of the largest companies in the world.
+I want to show you how to do the same.
+This is the class I wish I had taken when I started.
+This program will help you unlearn what you think machine learning is.
+It's a practical, hands-on class where you'll learn from years of experience and real-world examples.
+When you join, you get lifetime access to the following:
+18 hours of live, interactive sessions.
+We'll use this time to discuss the first principles behind building machine learning systems.
+10 hours of step-by-step coding instructions.
+These practical sessions will show you how to build an end-to-end system from scratch.
+A final project where you'll build a complete solution and receive direct feedback on your work.
+30 coding assignments and practice questions.
+Building Machine Learning Systems That Don't Suck
+The entire source code of a working production system. It's yours. You can change and use it as you see fit.
+A private community where you'll collaborate with thousands of people from different backgrounds.
+Direct access to your instructor.
+Lifetime access to every past and future cohort.
+Program certificate upon completion.
+And the best part is that you only pay once to join. There are no monthly fees. No annual fees. No hidden costs. You pay once to join and benefit forever until the end of time.
+The program won't be easy. It'll take time and effort.
+But if you want to use machine learning to solve real-world problems,this is the class you don't want to miss.
+Who Is This Program For?
+This is a practical, hands-on program for technical professionals who are ready to put in the work.
+This program is for software engineers,data scientists, data analysts, machine learning engineers,technical managers,
+and anyone anyone who wants to use machine learning to solve real-world problems.
+Here are the criteria to succeed in the program:
+You have experience writing code. We'll use Python throughout the class, but you won't have any problems if you know any other language.
+You are familiar with basic machine learning terminology.
+This is not an introductory class. We'll move quickly over the basics to focus on the fundamental ideas that make systems work.
+You are ready to put in the work to succeed.
+I have learned a ton from Santiago in his class and it was actually what helped inspire me and get into the MLOps work that I'm doing now.
+Truly one of the most helpful online courses for doing real, full-scale machine learning.
+Building Machine Learning Systems That Don't Suck
+What Will You Learn?
+You'll come out with practical skills and insights into what it takes to build systems that work in the real world.
+Here is a summary of what makes this program unique:
+You'll design and write the code to build an end-to-end machine learning system starting from scratch.
+You'll learn best practices to tackle the most significant challenges machine learning engineers face to build, evaluate, run, monitor,
+and maintain machine learning systems in real-world scenarios.
+You'll learn how to use techniques like active learning, distributed training, adversarial validation, human-in-the-loop deployments, model
+compression, test-time augmentation, testing in production, among many others.
+You'll learn how to create training, deploying, monitoring, and inference pipelines using Amazon SageMaker and open-source tools.
+Forget about theoretical concepts.
+This program will show you some of the things I've learned from real-life examples I've built during more than 30 years in the industry.
+Building Machine Learning Systems That Don't Suck
+Check the program syllabus Real-life examples and case studies
+Learn from practical experience building machine learning systems that work in the real world.
+Live, interactive sessions
+Ask questions and interact with the instructor and other students in real time.
+Building Machine Learning Systems That Don't Suck
+Code walkthroughs
+Step by step coding instructions to help you
+build a production system from scratch.
+Upcoming Schedule
+Every iteration of the program gives you 18 hours of hands-on, live training spread over 3 weeks.
+Here are the upcoming cohorts:
+Cohort 12:April 8-April 25, 2024.10:00 AM EDT
+Cohort 13:May 6-May 23, 2024.2:00 PM EDT
+Cohort 14:July 1-July 18, 2024.4:00 AM EDT
+Live sessions will take place every Monday and Thursday at the same time.
+On Wednesdays, we'll host office hours when you can bring your questions projects or anything else you want to discuss.
+Monday: Live session. 2 hours.
+Building Machine Learning Systems That Don't Suck
+Tuesday: Individual work.
+Wednesday: Optional office hours.
+Thursday: Live session. 2 hours.
+Friday: Individual work.
+Do not wait for a specific cohort to join the program. You have lifetime access
+to every past and future cohort, and the sooner you join, the more time you have to prepare.
+Every session is recorded. You can attend live or watch the recorded version later.
+This is one of the best classes I've ever purchased over the internet. Santiago is a terrific teacher.
+The ability he has to share knowledge is fantastic. I recommend this course. Worth 10x what he's charging.
+Building Machine Learning Systems That Don't Suck
+Ready To Join The Program?
+Get lifetime access to every future cohort. No monthly fees. No annual fees. No hidden costs.
+$450 Lifetime access to the program
+Pay once to join and benefit from every past and future cohort.
+You can participate in as many iterations as you'd like. No restrictions.
+Register now
+18 hours of live, interactive sessions
+10 hours of step-by-step coding instructions
+30 coding assignments and practice questions
+Complete source code of a working production system
+Building Machine Learning Systems That Don't Suck
+Program Syllabus
+This program will teach you the practical skills and insights that
+will help you build machine learning systems.
+Here are the contents of the six live sessions of the program:
+Session 1 - How To Start (Almost) Any Project
+What makes production machine learning different from what you've learned.
+The strategy to solve the right problem using the right solution.
+Critical questions to ask before starting any project.
+Problem framing, inversion, and the haystack principle for building
+successful applications.
+The first rule of machine learning engineering and how to start building.
+Data collection strategies. A technique to determine how much data you
+need.Bonus: Course to learn how to start freelancing on Upwork
+Membership access to a private community
+Direct access to your instructor
+Building Machine Learning Systems That Don't Suck
+The problem of selection bias and how to deal with it.
+Labeling data. Human annotations, natural labels and weak supervision.
+Active learning using the uncertainty and diversity sampling strategies.
+Session 2 - How to Build a Model
+The role of data cleaning and feature engineering to build better models.
+Turning data into numbers using vectorization techniques.
+Producing homogeneous features using normalization and standardization.
+Handling and interpreting missing values using imputation techniques.
+The approach to choosing the best model to solve any problem.
+Random baselines and the zero-rule algorithm.
+How to use overfitting to build models that don't suck.
+Hyperparameter tuning and experiment tracking.
+Measuring the quality of your holdout set.
+An introduction to distributed training using data parallelism and model parallelism.
+See the remaining sessions
+Building Machine Learning Systems That Don't Suck
+This is an awesome course! This is my second round and I continue learning. I recommend it with complete confidence.
+Machine Learning Engineer
+Frequently Asked Questions
+If you can't find the answer to your question, please reach out on social media and I'll be happy to help.
+How long will it take to complete the program?
+If you are attending the live sessions, you should set aside a minimum of 4 hours every week during the three weeks of the program.
+This commitment will be enough for engineer leaders or anyone not interested in the coding portion of the program.
+Those interested in implementing the concepts discussed in class should set aside 2 to 4 hours weekly to complete the code walkthroughs and work on the assignments.
+Building Machine Learning Systems That Don't Suck
+Are live sessions recorded?
+Yes, we record every live session. You can decide when to attend classes live or catch up asynchronously later using the recording.
+I'm a complete beginner. Is this program helpful for me?
+This program is not an introduction to machine learning.
+While we'll discuss many fundamental ideas behind machine learning, beginners will find the sessions go much faster than what's optimal for them.
+What does lifetime access mean?
+You only pay once to join the program and get immediate access to every past, present, and future cohort.
+Every new iteration of the program is better than the ones before.
+Many students take classes once and then join a later cohort to benefit from the updates.
+The lifetime access removes any pressure from having to complete the program when life gets in the way.
+Building Machine Learning Systems That Don't Suck
+Hey! I'm Santiago.
+I'm the instructor of the program.
+I'm a machine learning engineer with over two decades of experience building and scaling enterprise software and machine learning systems.
+I love neural networks. I love to make them work at scale.
+From 2009 to 2023, I built products for Disney, Boston Dynamics, IBM, Dell, G4S, Anheuser-Busch, and NextEra Energy, among other clients.
+I learned about trade-offs and how to create products that work.
+I started this program in March 2023. Since then, thousands of students have graduated, and I can't wait to meet you in class.
+Building Machine Learning Systems That Don't Suck
+Copyright © 2024 Tideily LLC All rights reserved.

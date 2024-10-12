@@ -1,0 +1,5 @@
+# echo "running ollama server in parallel mode"
+# OLLAMA_MAX_QUEUE=1024 OLLAMA_NUM_PARALLEL=2 OLLAMA_MAX_LOADED_MODELS=2 ollama serve > ~/workspace/ai/ollama_serve.log 2>&1 &
+
+echo "running ollama server"
+ollama serve > ~/workspace/ai/ollama_serve.log 2>&1 &

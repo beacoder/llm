@@ -1,0 +1,33 @@
+echo "check ollama/mistral availability:"
+
+echo ""
+
+curl http://localhost:11434/v1/chat/completions \
+    -H "Content-Type: application/json" \
+    -d '{
+        "model": "qwen2.5",
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are a helpful assistant."
+            },
+            {
+                "role": "user",
+                "content": "what is the model name?"
+            }
+        ]
+    }'
+
+echo ""
+
+echo "check ollama/nomic-embed-text availability:"
+
+echo ""
+
+curl http://localhost:11434/v1/embeddings -d '{
+  "model": "nomic-embed-text",
+  "input": "Why is the sky blue?"
+}'
+
+echo ""
+echo ""

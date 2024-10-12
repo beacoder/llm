@@ -1,0 +1,131 @@
+
+-Goal-
+Given a text document that is potentially relevant to this activity and a list of entity types, identify all entities of those types from the text and all relationships among the identified entities.
+
+-Steps-
+1. Identify all entities. For each identified entity, extract the following information:
+- entity_name: Name of the entity, capitalized
+- entity_type: One of the following types: [人物, 地点, 物品]
+- entity_description: Comprehensive description of the entity's attributes and activities
+Format each entity as ("entity"{tuple_delimiter}<entity_name>{tuple_delimiter}<entity_type>{tuple_delimiter}<entity_description>)
+
+2. From the entities identified in step 1, identify all pairs of (source_entity, target_entity) that are *clearly related* to each other.
+For each pair of related entities, extract the following information:
+- source_entity: name of the source entity, as identified in step 1
+- target_entity: name of the target entity, as identified in step 1
+- relationship_description: explanation as to why you think the source entity and the target entity are related to each other
+- relationship_strength: an integer score between 1 to 10, indicating strength of the relationship between the source entity and target entity
+Format each relationship as ("relationship"{tuple_delimiter}<source_entity>{tuple_delimiter}<target_entity>{tuple_delimiter}<relationship_description>{tuple_delimiter}<relationship_strength>)
+
+3. Return output in The primary language of the provided text is Chinese. The text contains traditional Chinese characters, which are commonly used in literary works or historical documents in China. as a single list of all the entities and relationships identified in steps 1 and 2. Use **{record_delimiter}** as the list delimiter.
+
+4. If you have to translate into The primary language of the provided text is Chinese. The text contains traditional Chinese characters, which are commonly used in literary works or historical documents in China., just translate the descriptions, nothing else!
+
+5. When finished, output {completion_delimiter}.
+
+-Examples-
+######################
+
+Example 1:
+
+entity_types: [人物, 地点, 物品]
+text:
+存，万千罗唣，肏捣了一夜。
+
+次日，老婆先起来，开了门，预备火盆，打发西门庆穿衣梳洗出门。到前边分付玳安：“教两名排军把卷棚放的流金八仙鼎，写帖儿抬送到宋御史老爹察院内，交付明白，讨回贴来。”又叫陈敬济，封了一匹金段，一匹色段，教琴童用毡包拿著，预备下马，要早往清河口，拜蔡知府去。正在月�
+------------------------
+output:
+-_delimiter}
+("entity"{tuple_delimiter}老婆{tuple_delimiter}人物{tuple_delimiter}西门庆的妻子)
+{record_delimiter}
+("entity"{tuple_delimiter}西门庆{tuple_delimiter}人物{tuple_delimiter}主要角色)
+{record_delimiter}
+("entity"{tuple_delimiter}玳安{tuple_delimiter}人物{tuple_delimiter}西门庆的仆人)
+{record_delimiter}
+("entity"{tuple_delimiter}宋御史老爹{tuple_delimiter}人物{tuple_delimiter}宋姓御史，可能是受送礼的对象)
+{record_delimiter}
+("entity"{tuple_delimiter}蔡知府{tuple_delimiter}人物{tuple_delimiter}清河口的行政长官)
+{record_delimiter}
+("entity"{tuple_delimiter}陈敬济{tuple_delimiter}人物{tuple_delimiter}西门庆的仆人)
+{record_delimiter}
+("entity"{tuple_delimiter}琴童{tuple_delimiter}人物{tuple_delimiter}西门庆的仆人)
+{record_delimiter}
+("entity"{tuple_delimiter}流金八仙鼎{tuple_delimiter}物品{tuple_delimiter}需要送礼的物品，可能是珍贵的器物)
+{record_delimiter}
+("entity"{tuple_delimiter}清河口{tuple_delimiter}地点{tuple_delimiter}蔡知府所在的地理位置)
+{record_delimiter}
+("relationship"{tuple_delimiter}西门庆{tuple_delimiter}老婆{tuple_delimiter}西门庆与他的妻子的关系是丈夫和妻子{tuple_delimiter}1)
+{record_delimiter}
+("relationship"{tuple_delimiter}西门庆{tuple_delimiter}玳安{tuple_delimiter}西门庆与玳安的关系是主人和仆人的关系{tuple_delimiter}1)
+{record_delimiter}
+("relationship"{tuple_delimiter}西门庆{tuple_delimiter}陈敬济{tuple_delimiter}西门庆与陈敬济的关系是主人和仆人的关系{tuple_delimiter}1)
+{record_delimiter}
+("relationship"{tuple_delimiter}西门庆{tuple_delimiter}琴童{tuple_delimiter}西门庆与琴童的关系是主人和仆人的关系{tuple_delimiter}1)
+{record_delimiter}
+("relationship"{tuple_delimiter}玳安{tuple_delimiter}宋御史老爹{tuple_delimiter}玳安被派去送礼给宋御史老爹{tuple_delimiter}2)
+{record_delimiter}
+("relationship"{tuple_delimiter}陈敬济{tuple_delimiter}蔡知府{tuple_delimiter}陈敬济被派去拜见蔡知府{tuple_delimiter}2)
+{record_delimiter}
+("relationship"{tuple_delimiter}流金八仙鼎{tuple_delimiter}宋御史老爹{tuple_delimiter}流金八仙鼎是送给宋御史老爹的礼物{tuple_delimiter}1)
+{record_delimiter}
+("relationship"{tuple_delimiter}蔡知府{tuple_delimiter}清河口{tuple_delimiter}蔡知府在清河口任职{tuple_delimiter}2)
+{completion_delimiter}
+
+-Real Data-
+######################
+entity_types: 人物, 地点
+text: 老子的命根子，你敢动一动？！
+老三，你给我滚出来！
+
+#############################
+
+
+Example 2:
+
+entity_types: [人物, 地点, 物品]
+text:
+��。”看官听说：金莲此话，讥讽李瓶儿首先生孩子，满月就不见了壶，也是不吉利。西门庆明听见，只不做声。只见迎春送壶进来。玉箫便道：“这不是壶有了。”月娘问迎春：“这壶端的往那里来？”迎春悉把琴童从外边拿到我娘屋里收著，不知在那里来。月娘因问： “琴童儿那奴才，如今在那里？”玳安道：“他今日该狮子街
+------------------------
+output:
+-Real Data-
+entity_types: 人物, 地点, 物品
+text: ��。”看官听说：金莲此话，讥讽李瓶儿首先生孩子，满月就不见了壶，也是不吉利。西门庆明听见，只不做声。只见迎春送壶进来。玉箫便道：“这不是壶有了。”月娘问迎春：“这壶端的往那里来？”迎春悉把琴童从外边拿到我娘屋里收著，不知在那里来。月娘因问： “琴童儿那奴才，如今在那里？”玳安道：“他今日该狮子街
+{record_delimiter}
+("entity"{tuple_delimiter}金莲{tuple_delimiter}人物{tuple_delimiter}讥讽李瓶儿首先生孩子，满月就不见了壶的人)
+{record_delimiter}
+("entity"{tuple_delimiter}李瓶儿{tuple_delimiter}人物{tuple_delimiter}被讥讽的人，首先生孩子的母亲)
+{record_delimiter}
+("entity"{tuple_delimiter}西门庆明{tuple_delimiter}人物{tuple_delimiter}听见金莲话语但没有回应的人)
+{record_delimiter}
+("entity"{tuple_delimiter}迎春{tuple_delimiter}人物{tuple_delimiter}送壶进来的人)
+{record_delimiter}
+("entity"{tuple_delimiter}玉箫{tuple_delimiter}人物{tuple_delimiter}说话的人，提到壶已经来了)
+{record_delimiter}
+("entity"{tuple_delimiter}月娘{tuple_delimiter}人物{tuple_delimiter}询问迎春壶来源的人)
+{record_delimiter}
+("entity"{tuple_delimiter}琴童{tuple_delimiter}人物{tuple_delimiter}从外边拿到壶的人，具体位置不明)
+{record_delimiter}
+("entity"{tuple_delimiter}狮子街{tuple_delimiter}地点{tuple_delimiter}玳安说琴童今日该去的地方)
+{record_delimiter}
+("relationship"{tuple_delimiter}金莲{tuple_delimiter}李瓶儿{tuple_delimiter}讥讽李瓶儿首先生孩子，满月就不见了壶的关系{tuple_delimiter}1)
+{record_delimiter}
+("relationship"{tuple_delimiter}西门庆明{tuple_delimiter}金莲{tuple_delimiter}听见金莲话语但没有回应的关系{tuple_delimiter}1)
+{record_delimiter}
+("relationship"{tuple_delimiter}迎春{tuple_delimiter}玉箫{tuple_delimiter}送壶进来和壶已经来了之间的关系{tuple_delimiter}1)
+{record_delimiter}
+("relationship"{tuple_delimiter}月娘{tuple_delimiter}迎春{tuple_delimiter}询问迎春壶来源的关系{tuple_delimiter}1)
+{record_delimiter}
+("relationship"{tuple_delimiter}琴童{tuple_delimiter}月娘{tuple_delimiter}琴童从外边拿到壶，月娘问其位置的关系{tuple_delimiter}1)
+{record_delimiter}
+("relationship"{tuple_delimiter}玳安{tuple_delimiter}琴童{tuple_delimiter}玳安说琴童今日该去狮子街的关系{tuple_delimiter}1)
+{completion_delimiter}
+#############################
+
+
+
+-Real Data-
+######################
+entity_types: [人物, 地点, 物品]
+text: {input_text}
+######################
+output:

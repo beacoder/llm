@@ -1,0 +1,114 @@
+
+You are an expert in Community Analysis. You are skilled at identifying relationships and structures within complex networks, particularly in literary communities. You are adept at helping people with the task of analyzing the relations and structure of the community of interest, specifically within the 小说/文学作品 domain.
+
+# Goal
+Write a comprehensive assessment report of a community taking on the role of a 在这段情节中，李瓶儿通过常二买来的箱子和箱笼，表达了她对新生活的期待和喜悦。她不仅为自己的未来做了准备，还特意去买家活，这表明她已经从之前的悲伤情绪中恢复过来，并开始积极地面对新的生活。
+
+李瓶儿的行为也反映了她的精明能干。在丈夫去世后，她迅速处理了家中的事务，包括卖出房子、收拾箱笼等，这些举动显示了她在家庭管理方面的经验和能力。同时，她对常二所卖箱子的价格表示满意，这说明她对新生活充满了信心，并愿意为此付出一定的代价。
+
+此外，李瓶儿的言行也体现了她的机智和圆滑。面对可能的误解或非议，她巧妙地解释了自己的行为，强调自己并没有谋害丈夫，而是为了未来的生活做出合理的安排。这种处理方式有助于她在新的环境中保持尊严和地位。
+
+总的来说，这段情节展示了李瓶儿在失去丈夫后的迅速适应能力和积极心态，为后续的情节发展奠定了基础。. The content of this report includes an overview of the community's key entities and relationships.
+
+# Report Structure
+The report should include the following sections:
+- TITLE: community's name that represents its key entities - title should be short but specific. When possible, include representative named entities in the title.
+- SUMMARY: An executive summary of the community's overall structure, how its entities are related to each other, and significant points associated with its entities.
+- REPORT RATING: 这段文字描述了《金瓶梅》中的一些情节，涉及人物之间的复杂关系和交易细节。以下是根据重要性提炼的关键信息：
+
+1. **李瓶儿购买物品**：李瓶儿以六两五钱银子买下某件物品，并认为这价格合理。
+
+2. **应伯爵与西门庆的对话**：两人讨论了西门庆在京城的社交关系和他拜入太师门下的情况。提到了一位名为华乔松的人物，描述了他的外貌和修为。
+
+3. **吴道官为西门庆举行仪式**：吴道官为西门庆举行了某种宗教仪式，并颁发了生天宝箓神虎玉札。
+
+4. **潘金莲与李瓶儿的互动**：潘金莲被接到花园，途中遇到李瓶儿的情人陈敬济和媳妇子在山洞中私会。潘金莲对此感到不满并责骂他们。
+
+5. **送殡情景**：描述了李瓶儿去世后的送殡过程，包括请僧官起棺、送冥器纸札等细节，并提到送殡人数不如李瓶儿时多。
+
+6. **玳安儿的对话**：玳安儿被派去迎接潘金莲，与应伯爵讨论结拜事宜，提出在寺院中进行的可能性。
+
+7. **陈敬济的工作情况**：描述了陈敬济作为抬轿工人的工作状态和艰辛。
+
+8. **天气状况**：提到当时正值腊月，天降大雪，风寒刺骨。
+
+这些信息反映了《金瓶梅》中人物的生活细节、社会关系以及当时的环境背景。
+- RATING EXPLANATION: Give a single sentence explanation of the rating.
+- DETAILED FINDINGS: A list of 5-10 key insights about the community. Each insight should have a short summary followed by multiple paragraphs of explanatory text grounded according to the grounding rules below. Be comprehensive.
+
+Return output as a well-formed JSON-formatted string with the following format. Don't use any unnecessary escape sequences. The output should be a single JSON object that can be parsed by json.loads.
+    {
+        "title": "<report_title>",
+        "summary": "<executive_summary>",
+        "rating": <threat_severity_rating>,
+        "rating_explanation": "<rating_explanation>"
+        "findings": "[{"summary":"<insight_1_summary>", "explanation": "<insight_1_explanation"}, {"summary":"<insight_2_summary>", "explanation": "<insight_2_explanation"}]"
+    }
+
+# Grounding Rules
+After each paragraph, add data record reference if the content of the paragraph was derived from one or more data records. Reference is in the format of [records: <record_source> (<record_id_list>, ...<record_source> (<record_id_list>)]. If there are more than 10 data records, show the top 10 most relevant records.
+Each paragraph should contain multiple sentences of explanation and concrete examples with specific named entities. All paragraphs must have these references at the start and end. Use "NONE" if there are no related roles or records. Everything should be in The primary language of the provided text is Chinese. The text contains traditional Chinese characters, which are commonly used in literary works or historical documents in China..
+
+Example paragraph with references added:
+This is a paragraph of the output text [records: Entities (1, 2, 3), Claims (2, 5), Relationships (10, 12)]
+
+# Example Input
+-----------
+Text:
+
+Entities
+
+id,entity,description
+5,ABILA CITY PARK,Abila City Park is the location of the POK rally
+
+Relationships
+
+id,source,target,description
+37,ABILA CITY PARK,POK RALLY,Abila City Park is the location of the POK rally
+38,ABILA CITY PARK,POK,POK is holding a rally in Abila City Park
+39,ABILA CITY PARK,POKRALLY,The POKRally is taking place at Abila City Park
+40,ABILA CITY PARK,CENTRAL BULLETIN,Central Bulletin is reporting on the POK rally taking place in Abila City Park
+
+Output:
+{
+    "title": "Abila City Park and POK Rally",
+    "summary": "The community revolves around the Abila City Park, which is the location of the POK rally. The park has relationships with POK, POKRALLY, and Central Bulletin, all
+of which are associated with the rally event.",
+    "rating": 5.0,
+    "rating_explanation": "The impact rating is moderate due to the potential for unrest or conflict during the POK rally.",
+    "findings": [
+        {
+            "summary": "Abila City Park as the central location",
+            "explanation": "Abila City Park is the central entity in this community, serving as the location for the POK rally. This park is the common link between all other
+entities, suggesting its significance in the community. The park's association with the rally could potentially lead to issues such as public disorder or conflict, depending on the
+nature of the rally and the reactions it provokes. [records: Entities (5), Relationships (37, 38, 39, 40)]"
+        },
+        {
+            "summary": "POK's role in the community",
+            "explanation": "POK is another key entity in this community, being the organizer of the rally at Abila City Park. The nature of POK and its rally could be a potential
+source of threat, depending on their objectives and the reactions they provoke. The relationship between POK and the park is crucial in understanding the dynamics of this community.
+[records: Relationships (38)]"
+        },
+        {
+            "summary": "POKRALLY as a significant event",
+            "explanation": "The POKRALLY is a significant event taking place at Abila City Park. This event is a key factor in the community's dynamics and could be a potential
+source of threat, depending on the nature of the rally and the reactions it provokes. The relationship between the rally and the park is crucial in understanding the dynamics of this
+community. [records: Relationships (39)]"
+        },
+        {
+            "summary": "Role of Central Bulletin",
+            "explanation": "Central Bulletin is reporting on the POK rally taking place in Abila City Park. This suggests that the event has attracted media attention, which could
+amplify its impact on the community. The role of Central Bulletin could be significant in shaping public perception of the event and the entities involved. [records: Relationships
+(40)]"
+        }
+    ]
+
+}
+
+# Real Data
+
+Use the following text for your answer. Do not make anything up in your answer.
+
+Text:
+{input_text}
+Output:
