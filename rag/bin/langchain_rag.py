@@ -1,4 +1,5 @@
 import os
+import sys
 from dotenv import load_dotenv
 from langchain_ollama.llms import OllamaLLM
 from langchain_ollama.embeddings import OllamaEmbeddings
@@ -48,12 +49,12 @@ def check_prompt():
     print(chain.invoke({"context": "My parents named me Santiago", "question": "What's your name'?"}))
 
 def index_doc():
+    global all_splits
     loader = TextLoader("/home/huming/workspace/ai/ragtest/input/JinPingMei.txt")
     docs = loader.load()
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200, add_start_index=True)
     all_splits = text_splitter.split_documents(docs)
     # print(all_splits)
-    return all_splits
 
 def query(retriever):
     rag_chain = (
@@ -82,9 +83,14 @@ def query_in_memory():
     retriever = vectorstore.as_retriever()
     query(retriever)
 
+def handle_args():
+    if len(sys.argv) == 2:
+        global questions
+        questions = [sys.argv[1]]
+
 def main():
-    global all_splits
-    all_splits = index_doc()
+    handle_args()
+    index_doc()
     # query_in_db()
     query_in_memory()
 

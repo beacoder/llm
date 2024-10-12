@@ -58,12 +58,15 @@
 ~/workspace/ai$ pip install -r llm/rag/requirements.txt
 
 ~/workspace/ai$ python bin/langchain_rag.py
+~/workspace/ai$ python bin/langchain_rag.py "西门庆参加了哪些聚会？都有哪些人参加了？"
 ```
 
 5. Results
 
 ```bash
 # The model used for these images is qwen2.5, as it's good at Chinese.
+
+# NOTE: The result shows baseline RAG beats GraphRAG most of the time, strange...
 ```
 
 ![西门庆和潘金莲什么关系?](images/graphrag_sample1.png)
