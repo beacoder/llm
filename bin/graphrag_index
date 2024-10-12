@@ -1,0 +1,4 @@
+source test_env/bin/activate
+
+echo "running graphrag indexing"
+python -m graphrag.index --root ./ragtest 2>&1

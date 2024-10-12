@@ -1,0 +1,6 @@
+source test_env/bin/activate
+
+echo "running prompt tuning"
+python -m graphrag.prompt_tune --root ./ragtest --config ./ragtest/settings.yaml
+
+# python -m graphrag.prompt_tune --root ./ragtest --config ./ragtest/settings.yaml --no-entity-types --language Chinese
