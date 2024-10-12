@@ -1,6 +1,6 @@
 # A bunch of experiments with LLMs
 
-## Setup
+## Build RAG application with local LLMs
 
 0. Install and run Ollama:
 
