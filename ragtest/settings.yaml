@@ -4,7 +4,7 @@ skip_workflows: []
 llm:
   api_key: ollama
   type: openai_chat # or azure_openai_chat
-  model: mistral
+  model: qwen2.5 # mistral
   model_supports_json: true # recommended if this is available for your model.
   max_tokens: 12000
   # request_timeout: 180.0
