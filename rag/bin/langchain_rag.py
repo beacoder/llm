@@ -8,6 +8,7 @@ from langchain.prompts import PromptTemplate
 from langchain_community.document_loaders import TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import DocArrayInMemorySearch
+from langchain_community.document_loaders import DirectoryLoader
 from operator import itemgetter
 from langchain_chroma import Chroma
 
@@ -47,6 +48,14 @@ def check_model():
 def check_prompt():
     chain = prompt | model | parser
     print(chain.invoke({"context": "My parents named me Santiago", "question": "What's your name'?"}))
+
+def index_doc_in_dir():
+    global all_splits
+    loader = DirectoryLoader("/home/huming/workspace/org", glob="**/*.org", recursive = True, loader_cls=TextLoader, silent_errors=True)
+    docs = loader.load()
+    print(f"totally {len(docs)} files are loaded.")
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200, add_start_index=True)
+    all_splits = text_splitter.split_documents(docs)
 
 def index_doc():
     global all_splits
@@ -90,6 +99,7 @@ def handle_args():
 
 def main():
     handle_args()
+    # index_doc_in_dir()
     index_doc()
     # query_in_db()
     query_in_memory()
