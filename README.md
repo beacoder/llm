@@ -59,6 +59,8 @@
 
 ~/workspace/ai$ python bin/langchain_rag.py
 ~/workspace/ai$ python bin/langchain_rag.py "西门庆参加了哪些聚会？都有哪些人参加了？"
+
+# NOTE: to be able to handle org file, you have to run "pip install pypandoc-binary"
 ```
 
 5. Results

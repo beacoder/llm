@@ -5,12 +5,15 @@ from langchain_ollama.llms import OllamaLLM
 from langchain_ollama.embeddings import OllamaEmbeddings
 from langchain_core.output_parsers import StrOutputParser
 from langchain.prompts import PromptTemplate
-from langchain_community.document_loaders import TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import DocArrayInMemorySearch
-from langchain_community.document_loaders import DirectoryLoader
 from operator import itemgetter
 from langchain_chroma import Chroma
+import orgparse
+from doc_loader import (
+    load_text,
+    load_org_in_dir
+)
 
 load_dotenv()
 
@@ -20,7 +23,6 @@ MODEL = "qwen2.5"
 model = OllamaLLM(model=MODEL)
 embeddings = OllamaEmbeddings(model=MODEL)
 parser = StrOutputParser()
-all_splits = None
 
 template = """
 You are an assistant for question-answering tasks.
@@ -49,23 +51,9 @@ def check_prompt():
     chain = prompt | model | parser
     print(chain.invoke({"context": "My parents named me Santiago", "question": "What's your name'?"}))
 
-def index_doc_in_dir():
-    global all_splits
-    loader = DirectoryLoader("/home/huming/workspace/org", glob="**/*.org", recursive = True, loader_cls=TextLoader, silent_errors=True)
-    docs = loader.load()
-    print(f"totally {len(docs)} files are loaded.")
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200, add_start_index=True)
-    all_splits = text_splitter.split_documents(docs)
-
-def index_doc():
-    global all_splits
-    loader = TextLoader("/home/huming/workspace/ai/ragtest/input/JinPingMei.txt")
-    docs = loader.load()
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200, add_start_index=True)
-    all_splits = text_splitter.split_documents(docs)
-    # print(all_splits)
-
 def query(retriever):
+    print(f"Querying ...")
+    print()
     rag_chain = (
         {
             "context": itemgetter("question") | retriever,
@@ -78,7 +66,7 @@ def query(retriever):
         print(f"Answer: {rag_chain.invoke({'question': question})}")
         print()
 
-def query_in_db():
+def query_in_db(all_splits):
     if os.path.exists("./chroma_db"):
         vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
     else:
@@ -87,7 +75,7 @@ def query_in_db():
     retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 6})
     query(retriever)
 
-def query_in_memory():
+def query_in_memory(all_splits):
     vectorstore = DocArrayInMemorySearch.from_documents(all_splits, embedding=embeddings)
     retriever = vectorstore.as_retriever()
     query(retriever)
@@ -99,10 +87,11 @@ def handle_args():
 
 def main():
     handle_args()
-    # index_doc_in_dir()
-    index_doc()
-    # query_in_db()
-    query_in_memory()
+    splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200, add_start_index=True)
+    # all_splits = splitter.split_documents(load_org_in_dir("/home/huming/workspace/org"))
+    all_splits = splitter.split_documents(load_text("/home/huming/workspace/ai/ragtest/input/JinPingMei.txt"))
+    # query_in_db(all_splits)
+    query_in_memory(all_splits)
 
 
 if __name__ == "__main__":
