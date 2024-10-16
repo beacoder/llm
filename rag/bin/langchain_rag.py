@@ -77,7 +77,7 @@ def query_in_db(all_splits):
 
 def query_in_memory(all_splits):
     vectorstore = DocArrayInMemorySearch.from_documents(all_splits, embedding=embeddings)
-    retriever = vectorstore.as_retriever()
+    retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 6})
     query(retriever)
 
 def handle_args():
