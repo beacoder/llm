@@ -2,4 +2,4 @@ source test_env/bin/activate
 
 echo "running graphrag global query: $@"
 
-python -m graphrag.query --root ./ragtest --method global "$@"
+python -m graphrag query --root ./ragtest --method global --query "$@"
