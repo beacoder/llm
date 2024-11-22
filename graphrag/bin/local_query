@@ -2,4 +2,4 @@ source test_env/bin/activate
 
 echo "running graphrag local query: $@"
 
-python -m graphrag.query --root ./ragtest --method local "$@"
+python -m graphrag query --root ./ragtest --method local --query "$@"
