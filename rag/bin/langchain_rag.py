@@ -88,10 +88,10 @@ def handle_args():
 def main():
     handle_args()
     splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200, add_start_index=True)
-    # all_splits = splitter.split_documents(load_org_in_dir("/home/huming/workspace/org"))
-    all_splits = splitter.split_documents(load_text("/home/huming/workspace/ai/ragtest/input/JinPingMei.txt"))
-    # query_in_db(all_splits)
-    query_in_memory(all_splits)
+    # all_chunks = splitter.split_documents(load_org_in_dir("/home/huming/workspace/org"))
+    all_chunks = splitter.split_documents(load_text("/home/huming/workspace/ai/ragtest/input/JinPingMei.txt"))
+    # query_in_db(all_chunks)
+    query_in_memory(all_chunks)
 
 
 if __name__ == "__main__":
