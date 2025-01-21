@@ -1,10 +1,10 @@
 import os
-import sys
 from langchain_community.document_loaders import (
     TextLoader,
     DirectoryLoader,
     UnstructuredOrgModeLoader,
 )
+
 
 def load_text(file_path):
     print(f"Loading {file_path}")
