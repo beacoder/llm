@@ -50,15 +50,14 @@
 # NOTE: global_query is not working due to graphrag code broken
 ```
 
-4. Run baseline RAG to analyze and search for JinPingMei：
+4. Run Agentic RAG to analyze and search for JinPingMei：
 
 ```bash
 ~/workspace/ai$ python3 -m venv test_env2
 ~/workspace/ai$ source test_env2/bin/activate
 ~/workspace/ai$ pip install -r llm/rag/requirements.txt
 
-~/workspace/ai$ python bin/langchain_rag.py
-~/workspace/ai$ python bin/langchain_rag.py "西门庆参加了哪些聚会？都有哪些人参加了？"
+~/workspace/ai$ python bin/agentic_rag.py
 
 # NOTE: to be able to handle org file, you have to run "pip install pypandoc-binary"
 ```
