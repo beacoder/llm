@@ -1,4 +1,4 @@
-echo "check ollama/mistral availability:"
+echo "check ollama availability:"
 
 echo ""
 
