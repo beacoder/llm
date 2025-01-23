@@ -1,32 +1,12 @@
-from dotenv import load_dotenv
-from langchain.prompts import PromptTemplate
 from langchain.schema import Document
-from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
 from langchain_core.vectorstores.base import VectorStoreRetriever
-from langchain_ollama import OllamaLLM, ChatOllama
 from langgraph.graph import END, StateGraph
 from pprint import pprint
-from rag_utils import (
-    qa_template,
-    rerank_template,
-    hallucination_check_template,
-    answer_check_template,
-    index_documents)
+from rag_utils import *
 from typing import List
 from typing_extensions import TypedDict
 import os, pdb
 
-
-load_dotenv()
-
-QWEN = "qwen2.5"
-# llm = ChatOllama(model=QWEN, temperature=0) # better for chatting
-llm = OllamaLLM(model=QWEN, temperature=0)
-
-retriever_grader = PromptTemplate.from_template(rerank_template) | llm | JsonOutputParser()
-rag_chain = PromptTemplate.from_template(qa_template) | llm | StrOutputParser()
-hallucination_grader = PromptTemplate.from_template(hallucination_check_template) | llm | StrOutputParser()
-answer_grader =PromptTemplate.from_template(answer_check_template) | llm | JsonOutputParser()
 
 # simplified graph
 #                                                                     / hallucination -> re-generate
