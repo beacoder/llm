@@ -59,7 +59,7 @@
 ```bash
 # The model used for these images is qwen2.5, as it's good at Chinese.
 
-# NOTE: The result shows baseline RAG beats GraphRAG most of the time, strange...
+# NOTE: The result shows AgenticRAG beats GraphRAG most of the time, strange...
 ```
 
 ![西门庆和潘金莲什么关系?](images/graphrag_sample1.png)
