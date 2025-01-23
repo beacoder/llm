@@ -61,5 +61,5 @@ def index_documents():
         vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
     else:
         vectorstore = Chroma.from_documents(documents=doc_splits, embedding=embeddings, persist_directory="./chroma_db")
-    retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 25})
+    retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 10})
     return retriever
