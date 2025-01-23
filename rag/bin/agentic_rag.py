@@ -1,4 +1,3 @@
-from langchain.schema import Document
 from langchain_core.vectorstores.base import VectorStoreRetriever
 from langgraph.graph import END, StateGraph
 from pprint import pprint
