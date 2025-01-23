@@ -1,4 +1,4 @@
-from doc_loader import load_text, load_org_in_dir
+from doc_loader import load_text
 from dotenv import load_dotenv
 from langchain.prompts import PromptTemplate
 from langchain_chroma import Chroma
