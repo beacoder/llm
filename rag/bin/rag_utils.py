@@ -1,12 +1,20 @@
-import os, pdb
-from langchain_chroma import Chroma
-from langchain_ollama.embeddings import OllamaEmbeddings
 from doc_loader import load_text, load_org_in_dir
+from dotenv import load_dotenv
+from langchain.prompts import PromptTemplate
+from langchain_chroma import Chroma
+from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
+from langchain_ollama import OllamaLLM, ChatOllama
+from langchain_ollama.embeddings import OllamaEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+import os, pdb
 
+
+load_dotenv()
 
 QWEN = "qwen2.5"
 embeddings = OllamaEmbeddings(model=QWEN)
+# llm = ChatOllama(model=QWEN, temperature=0) # better for chatting
+llm = OllamaLLM(model=QWEN, temperature=0)
 
 qa_template = """
 You are an assistant for question-answering tasks.
@@ -28,7 +36,7 @@ Here is the retrieved document: \n\n {document} \n\n
 Here is the user question: {question} \n
 """
 
-hallucination_check_template = """
+hallucination_template = """
 You are a grader assessing whether an answer is grounded in / supported by a set of facts.
 Give a binary score 'yes' or 'no' score to indicate whether an answer is grounded in / supported by a set of facts.
 Provide the binary score as a JSON with a single key 'score' and no preamble or explanation.
@@ -40,7 +48,7 @@ Here are the facts:
 Here is the answer: {generation}
 """
 
-answer_check_template = """
+answer_template = """
 You are a grader assessing whether an answer is useful to resolve a question.
 Give a binary score 'yes' or 'no' score to indicate whether an answer is useful to resolve a question.
 Provide the binary score as a JSON with a single key 'score' and no preamble or explanation.
@@ -51,6 +59,11 @@ Here are the facts:
 \n ------- \n
 Here is the question: {question}
 """
+
+retriever_grader = PromptTemplate.from_template(rerank_template) | llm | JsonOutputParser()
+rag_chain = PromptTemplate.from_template(qa_template) | llm | StrOutputParser()
+hallucination_grader = PromptTemplate.from_template(hallucination_template) | llm | StrOutputParser()
+answer_grader =PromptTemplate.from_template(answer_template) | llm | JsonOutputParser()
 
 def index_documents():
     """Index documents and return a retriever."""
