@@ -3,7 +3,7 @@ from langchain.prompts import PromptTemplate
 from langchain.schema import Document
 from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
 from langchain_core.vectorstores.base import VectorStoreRetriever
-from langchain_ollama.llms import OllamaLLM
+from langchain_ollama import ChatOllama
 from langgraph.graph import END, StateGraph
 from pprint import pprint
 from rag_utils import (
@@ -20,7 +20,7 @@ import os, pdb
 load_dotenv()
 
 QWEN = "qwen2.5"
-llm = OllamaLLM(model=QWEN)
+llm = ChatOllama(model=QWEN, format="json", temperature=0)
 
 retriever_grader = PromptTemplate.from_template(rerank_template) | llm | JsonOutputParser()
 rag_chain = PromptTemplate.from_template(qa_template) | llm | StrOutputParser()
