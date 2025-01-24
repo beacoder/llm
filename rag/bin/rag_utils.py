@@ -63,9 +63,9 @@ Here are the facts:
 Here is the question: {question}
 """
 
-retriever_grader = PromptTemplate.from_template(rerank_template) | llm | JsonOutputParser()
 rag_chain = PromptTemplate.from_template(qa_template) | llm | StrOutputParser()
-hallucination_grader = PromptTemplate.from_template(hallucination_template) | llm | StrOutputParser()
+retriever_grader = PromptTemplate.from_template(rerank_template) | llm | JsonOutputParser()
+hallucination_grader = PromptTemplate.from_template(hallucination_template) | llm | JsonOutputParser()
 answer_grader =PromptTemplate.from_template(answer_template) | llm | JsonOutputParser()
 
 def index_documents():
