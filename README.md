@@ -15,21 +15,17 @@
 ~/workspace/ai$ ollama pull qwen2.5
 ~/workspace/ai$ ollama pull nomic-embed-text
 
-~/workspace/ai$ mkdir bin
-
-# make sure you have all the scripts placed in ~/workspace/ai/bin
-
-~/workspace/ai$ ./bin/run_ollama
+~/workspace/ai$ ./ollama/bin/run_ollama
 ```
 
 ### Run AgenticRAG to analyze and search for JinPingMei
 
 ```bash
-~/workspace/ai$ python3 -m venv test_env2
-~/workspace/ai$ source test_env2/bin/activate
+~/workspace/ai$ python3 -m venv rag_env
+~/workspace/ai$ source rag_env/bin/activate
 ~/workspace/ai$ pip install -r llm/rag/requirements.txt
 
-~/workspace/ai$ python bin/agentic_rag.py
+~/workspace/ai$ python ./rag/bin/agentic_rag.py
 
 # NOTE: to be able to handle org file, you have to run "pip install pypandoc-binary"
 ```
@@ -37,8 +33,8 @@
 ### Run GraphRAG to analyze and search for JinPingMei
 
 ```bash
-~/workspace/ai$ python3 -m venv test_env
-~/workspace/ai$ source test_env/bin/activate
+~/workspace/ai$ python3 -m venv graphrag_env
+~/workspace/ai$ source graphrag_env/bin/activate
 ~/workspace/ai$ pip install -r llm/graphrag/requirements.txt
 
 ~/workspace/ai$ mkdir ~/workspace/ai/ragtest
@@ -47,9 +43,9 @@
 # apply changes in modified_graphrag to installed graphrag for mistral/qwen2.5 accordingly
 # NOTE: finetuned prompt has been provided, if you wanna do it yourself, run ./bin/prompt_tuning
 
-~/workspace/ai$ ./bin/graphrag_index
+~/workspace/ai$ ./graphrag/bin/graphrag_index
 
-~/workspace/ai$ ./bin/local_query "这个章节中，西门庆有几个老婆，他们的关系如何?"
+~/workspace/ai$ ./graphrag/bin/local_query "这个章节中，西门庆有几个老婆，他们的关系如何?"
 
 # NOTE: global_query is not working due to graphrag code broken
 ```
