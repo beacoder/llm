@@ -21,6 +21,8 @@
 ### Run AgenticRAG to analyze and search for JinPingMei
 
 ```bash
+# make sure your python3 version >= 3.10.12
+
 ~/workspace/ai$ python3 -m venv rag_env
 ~/workspace/ai$ source rag_env/bin/activate
 ~/workspace/ai$ pip install -r rag/requirements.txt
@@ -33,12 +35,14 @@
 ### Run GraphRAG to analyze and search for JinPingMei
 
 ```bash
+# make sure your python3 version >= 3.10.12
+
 ~/workspace/ai$ python3 -m venv graphrag_env
 ~/workspace/ai$ source graphrag_env/bin/activate
 ~/workspace/ai$ pip install -r graphrag/requirements.txt
 
 ~/workspace/ai$ mkdir ~/workspace/ai/ragtest
-~/workspace/ai$ cp -rf llm/graphrag/ragtest ~/workspace/ai/ragtest
+~/workspace/ai$ cp -rf graphrag/ragtest ~/workspace/ai/ragtest
 
 # apply changes in modified_graphrag to installed graphrag for mistral/qwen2.5 accordingly
 # NOTE: finetuned prompt has been provided, if you wanna do it yourself, run ./bin/prompt_tuning
