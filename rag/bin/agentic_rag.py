@@ -4,7 +4,7 @@ from pprint import pprint
 from rag_utils import *
 from typing import List
 from typing_extensions import TypedDict
-import os, pdb
+import pdb, sys
 
 
 # simplified graph
@@ -155,7 +155,7 @@ def grade_generation_v_documents_and_question(state):
 
     score = hallucination_grader.invoke({"documents": documents, "generation": generation})
 
-    # currently, since llm can't generate a score, so default this to 'yes'
+    # currently, hallucination_grader not working well, could lead to infinite loops
     # grade = score["score"]
     grade = "yes"
 
@@ -210,11 +210,15 @@ def main():
     app = workflow.compile()
 
     # Test
-    questions = ["这本书主要讲的是什么故事?",
-                 "西门庆有哪些朋友?",
-                 "西门庆和几个女人有染，分别是谁?",
-                 "西门庆和他的女人们的最后结局是啥?",
-                 ]
+    if len(sys.argv) > 1:
+        pdb.set_trace()
+        questions = sys.argv[1:]
+    else:
+        questions = ["这本书主要讲的是什么故事?",
+                     "西门庆有哪些朋友?",
+                     "西门庆和几个女人有染，分别是谁?",
+                     "西门庆和他的女人们的最后结局是啥?",
+                    ]
     retriever = index_documents()
 
     for q in questions:
