@@ -23,7 +23,7 @@
 ```bash
 ~/workspace/ai$ python3 -m venv rag_env
 ~/workspace/ai$ source rag_env/bin/activate
-~/workspace/ai$ pip install -r llm/rag/requirements.txt
+~/workspace/ai$ pip install -r rag/requirements.txt
 
 ~/workspace/ai$ python ./rag/bin/agentic_rag.py
 
@@ -35,7 +35,7 @@
 ```bash
 ~/workspace/ai$ python3 -m venv graphrag_env
 ~/workspace/ai$ source graphrag_env/bin/activate
-~/workspace/ai$ pip install -r llm/graphrag/requirements.txt
+~/workspace/ai$ pip install -r graphrag/requirements.txt
 
 ~/workspace/ai$ mkdir ~/workspace/ai/ragtest
 ~/workspace/ai$ cp -rf llm/graphrag/ragtest ~/workspace/ai/ragtest
