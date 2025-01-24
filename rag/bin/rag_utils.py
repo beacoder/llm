@@ -3,18 +3,18 @@ from dotenv import load_dotenv
 from langchain.prompts import PromptTemplate
 from langchain_chroma import Chroma
 from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
-from langchain_ollama import OllamaLLM, ChatOllama
+from langchain_ollama import ChatOllama
 from langchain_ollama.embeddings import OllamaEmbeddings
+from langchain_openai import ChatOpenAI
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 import os, pdb
 
 
 load_dotenv()
 
-QWEN = "qwen2.5"
-embeddings = OllamaEmbeddings(model=QWEN)
-# llm = ChatOllama(model=QWEN, temperature=0) # better for chatting
-llm = OllamaLLM(model=QWEN, temperature=0)
+embeddings = OllamaEmbeddings(model="nomic-embed-text")
+llm = ChatOllama(model="qwen2.5", temperature=0)
+# llm = ChatOpenAI(api_key=f"{deepseek_api_key}", model="deepseek-chat", base_url='https://api.deepseek.com')
 
 qa_template = """
 You are an assistant for question-answering tasks.
@@ -68,7 +68,7 @@ answer_grader =PromptTemplate.from_template(answer_template) | llm | JsonOutputP
 def index_documents():
     """Index documents and return a retriever."""
 
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200, separators=["。"], add_start_index=True)
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200, separators=["。"])
     doc_splits = text_splitter.split_documents(load_text("/home/huming/download/JinPingMei.txt"))
     if os.path.exists("./chroma_db"):
         vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
