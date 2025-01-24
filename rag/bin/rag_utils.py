@@ -69,8 +69,9 @@ hallucination_grader = PromptTemplate.from_template(hallucination_template) | ll
 answer_grader =PromptTemplate.from_template(answer_template) | llm | JsonOutputParser()
 
 def index_documents():
-    """Index documents and return a retriever."""
-
+    """
+    Index documents and return a retriever.
+    """
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200, separators=["。"])
     doc_splits = text_splitter.split_documents(load_text("/home/huming/download/JinPingMei.txt"))
     if os.path.exists("./chroma_db"):
