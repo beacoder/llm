@@ -14,7 +14,7 @@ load_dotenv()
 
 embeddings = OllamaEmbeddings(model="nomic-embed-text")
 llm = ChatOllama(model="qwen2.5", temperature=0)
-# llm = ChatOpenAI(api_key=f"{deepseek_api_key}", model="deepseek-chat", base_url='https://api.deepseek.com')
+# llm = ChatOpenAI(api_key=f"{$deepseek_api_key}", model="deepseek-chat", base_url='https://api.deepseek.com')
 
 qa_template = """
 You are an assistant for question-answering tasks.
