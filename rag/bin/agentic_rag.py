@@ -211,7 +211,6 @@ def main():
 
     # Test
     if len(sys.argv) > 1:
-        pdb.set_trace()
         questions = sys.argv[1:]
     else:
         questions = ["这本书主要讲的是什么故事?",
