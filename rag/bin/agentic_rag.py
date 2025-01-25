@@ -153,9 +153,9 @@ def grade_generation_v_documents_and_question(state):
     documents = state["documents"]
     generation = state["generation"]
 
-    score = hallucination_grader.invoke({"documents": documents, "generation": generation})
-
     # currently, hallucination_grader not working well, could lead to infinite loops
+    # so hardcoded as yes here
+    # score = hallucination_grader.invoke({"documents": documents, "generation": generation})
     # grade = score["score"]
     grade = "yes"
 
