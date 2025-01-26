@@ -13,11 +13,11 @@ import os, pdb
 load_dotenv()
 
 embeddings = OllamaEmbeddings(model="nomic-embed-text")
-# llm = ChatOllama(model="qwen2.5", temperature=0)
+# llm = ChatOllama(model="qwen2.5", temperature=0.25)
 llm = ChatOpenAI(api_key=$deepseek_api_key,
                  model="deepseek-chat",
                  base_url='https://api.deepseek.com',
-                 temperature=0)
+                 temperature=0.25)
 
 qa_template = """
 Answer the following question using the provided context.
@@ -51,14 +51,32 @@ Context: France is a country in Europe. Its capital is Paris, which is known for
 """
 
 rerank_template = """
-You are a grader assessing relevance of a retrieved document to a user question.
-If the document contains keywords related to the user question, grade it as relevant.
-It does not need to be a stringent test. The goal is to filter our erroneous retrievals. \n
-Give a binary score 'yes' or 'no' score to indicate whether the document is relevant to the question. \n
-Provide the binary score as a JSON with a single key 'score' and no preamble or explanation.
+You are a relevance evaluator. Your task is to rank the retrieved document based on their relevance to the question.
+Assign a score from 0 to 10, where:
+- **0-3**: Irrelevant or barely related to the query.
+- **4-6**: Somewhat relevant but lacks key details or is only partially aligned with the query.
+- **7-8**: Relevant and addresses the query well, but may have minor gaps or unnecessary details.
+- **9-10**: Highly relevant, directly addresses the query, and provides comprehensive or precise information.
 
-Here is the retrieved document: \n\n {document} \n\n
-Here is the user question: {question} \n
+Provide the score as a JSON with a single key 'score' and provide the explanation as a JSON with a single key 'explanation'.
+
+Here is the retrieved document: {document}
+Here is the user question: {question}
+
+**Examples**:
+
+**Query:** "What are the benefits of regular exercise for mental health?"
+**Document 1:** "Regular exercise improves cardiovascular health and reduces the risk of diabetes."
+\'{{"score": 2, explanation: "document focuses on physical health benefits, not mental health, making it irrelevant to the query.}}\'
+
+**Document 2:** "Exercise can reduce symptoms of anxiety and depression by releasing endorphins."
+\'{{"score": 9, explanation: "The document directly addresses mental health benefits, aligning well with the query."}}\'
+
+**Document 3:** "Mental health is influenced by diet, sleep, and exercise, but this article focuses on diet."
+\'{{"score": 4, explanation: "The document mentions exercise briefly but primarily focuses on diet, making it only somewhat relevant."}}\'
+
+**Document 4:** "Regular exercise boosts mood, reduces stress, and improves cognitive function, all of which are critical for mental well-being."
+\'{{"score": 10, explanation: "The document comprehensively addresses the mental health benefits of exercise, directly matching the query."}}\'
 """
 
 hallucination_template = """
