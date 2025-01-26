@@ -77,7 +77,9 @@ def grade_documents(state):
         # Document not relevant
         else:
             print("---GRADE: DOCUMENT NOT RELEVANT---")
-            web_search = "Yes"
+            # print("---DOCUMENT CONTENT---")
+            # print(d.page_content)
+            # web_search = "Yes"
             continue
     return {"documents": filtered_docs, "question": question, "web_search": web_search}
 
@@ -217,16 +219,15 @@ def main():
                      "西门庆有哪些朋友?",
                      "西门庆和几个女人有染，分别是谁?",
                      "西门庆和他的女人们的最后结局是啥?",
-                    ]
-    retriever = index_documents()
+                     ]
+    retriever = index_documents("docs/JinPingMei.txt")
 
     for q in questions:
         input_state = {"question": q, "retriever": retriever}
         for output in app.stream(input_state):
             for key, value in output.items():
-                pprint(f"Finished running: {key}:")
-        print(f'question:\n{value["question"]}')
-        print(f'answer:\n{value["generation"]}')
+                pprint(f"---FINISHED RUNNING: {key}---")
+        print(value["generation"])
 
 
 if __name__ == "__main__":
