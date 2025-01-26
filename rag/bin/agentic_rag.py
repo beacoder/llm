@@ -68,17 +68,15 @@ def grade_documents(state):
     filtered_docs = []
     web_search = "No"
     for d in documents:
-        score = retriever_grader.invoke({"question": question, "document": d.page_content})
-        grade = score['score']
+        json_resp = retriever_grader.invoke({"question": question, "document": d.page_content})
         # Document relevance
-        if grade.lower() == "yes":
+        if json_resp['score'] > 3: # means relevant
             print("---GRADE: DOCUMENT RELEVANT---")
             filtered_docs.append(d)
         # Document not relevant
         else:
             print("---GRADE: DOCUMENT NOT RELEVANT---")
-            # print("---DOCUMENT CONTENT---")
-            # print(d.page_content)
+            # print(json_resp['explanation'])
             # web_search = "Yes"
             continue
     return {"documents": filtered_docs, "question": question, "web_search": web_search}
@@ -220,7 +218,7 @@ def main():
                      "西门庆和几个女人有染，分别是谁?",
                      "西门庆和他的女人们的最后结局是啥?",
                      ]
-    retriever = index_documents("docs/JinPingMei.txt")
+    retriever = index_documents("./docs/JinPingMei.txt")
 
     for q in questions:
         input_state = {"question": q, "retriever": retriever}
