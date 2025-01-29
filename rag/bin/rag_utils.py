@@ -68,16 +68,16 @@ Here is the user question: {question}
 
 **Query:** "What are the benefits of regular exercise for mental health?"
 **Document 1:** "Regular exercise improves cardiovascular health and reduces the risk of diabetes."
-\'{{"score": 2, explanation: "document focuses on physical health benefits, not mental health, making it irrelevant to the query.}}\'
+\'{{"score": 2, "explanation": "document focuses on physical health benefits, not mental health, making it irrelevant to the query.}}\'
 
 **Document 2:** "Exercise can reduce symptoms of anxiety and depression by releasing endorphins."
-\'{{"score": 9, explanation: "The document directly addresses mental health benefits, aligning well with the query."}}\'
+\'{{"score": 9, "explanation": "The document directly addresses mental health benefits, aligning well with the query."}}\'
 
 **Document 3:** "Mental health is influenced by diet, sleep, and exercise, but this article focuses on diet."
-\'{{"score": 4, explanation: "The document mentions exercise briefly but primarily focuses on diet, making it only somewhat relevant."}}\'
+\'{{"score": 4, "explanation": "The document mentions exercise briefly but primarily focuses on diet, making it only somewhat relevant."}}\'
 
 **Document 4:** "Regular exercise boosts mood, reduces stress, and improves cognitive function, all of which are critical for mental well-being."
-\'{{"score": 10, explanation: "The document comprehensively addresses the mental health benefits of exercise, directly matching the query."}}\'
+\'{{"score": 10, "explanation": "The document comprehensively addresses the mental health benefits of exercise, directly matching the query."}}\'
 """
 
 hallucination_template = """
