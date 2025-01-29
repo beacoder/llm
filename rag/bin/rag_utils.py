@@ -52,7 +52,8 @@ Context: France is a country in Europe. Its capital is Paris, which is known for
 """
 
 rerank_template = """
-You are a relevance evaluator. Your task is to rank the retrieved document based on their relevance to the question.
+You are an assistant for relevance evaluation.
+Your task is to rank the retrieved document based on their relevance to the question.
 Assign a score from 0 to 10, where:
 - **0-3**: Irrelevant or barely related to the query.
 - **4-6**: Somewhat relevant but lacks key details or is only partially aligned with the query.
