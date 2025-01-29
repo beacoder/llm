@@ -20,6 +20,7 @@ llm = ChatOpenAI(api_key=$deepseek_api_key,
                  temperature=0.25)
 
 qa_template = """
+You are an assistant for question-answering tasks.
 Answer the following question using the provided context.
 When answering, list the supporting facts and clearly indicate their source within the context.
 If you can't answer the question, reply "I don't know".
@@ -27,26 +28,26 @@ If you can't answer the question, reply "I don't know".
 Question: {question}
 Context: {context}
 
-*Question*:
+**Question**:
 <Provide the original question.>
 
-*Answer*:
+**Answer**:
 <Provide the answer to the question.>
 
-*Supporting Facts*:
+**Supporting Facts**:
 1. <Fact 1> (Source: <Exact location or reference in the context>)
 2. <Fact 2> (Source: <Exact location or reference in the context>)
 3. <Fact 3> (Source: <Exact location or reference in the context>)
 ...
 
-*Example*:
+**Example**:
 Question: What is the capital of France?
 Context: France is a country in Europe. Its capital is Paris, which is known for its art, fashion, and culture.
 
-*Question*: What is the capital of France?
-*Answer*: The capital of France is Paris.
+**Question**: What is the capital of France?
+**Answer**: The capital of France is Paris.
 
-*Supporting Facts*:
+**Supporting Facts**:
 1. "Its capital is Paris" (Source: Second sentence of the context).
 """
 
