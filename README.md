@@ -79,4 +79,4 @@
 ![这个章节中，西门庆有几个老婆，他们的关系如何?](images/graphrag_sample2.png)
 ![这本书主要讲的是什么故事?](images/graphrag_sample3.png)
 ![langchain_rag_questions](images/langchain_rag_sample1.png)
-![create_10_files_with_poetry](images/video.mp4)
+![create_3_files_with_poetry](images/agentic_tool_capture.mp4)
