@@ -95,7 +95,7 @@ def run_script(script_program: str, script_file: str, script_args: str):
 
 task1= """
 1.create a new directory '~/workspace/ai/testing'
-2.create 10 text files in this directory, each file with a poetry with at least 100 words.
+2.create 3 text files in this directory, each file with a poetry with at least 100 words.
 """
 
 task2 = """
@@ -113,7 +113,8 @@ def main():
     agent = create_react_agent(llm, tools, state_modifier=format_for_model)
     inputs = {"messages": [("user", task_prompt + task1)]}
 
-    for s in agent.stream(inputs, stream_mode="values"):
+    # increase recursion_limit to avoid agent stops prematurely
+    for s in agent.stream(inputs, stream_mode="values", config={"recursion_limit": 100}):
         message = s["messages"][-1]
         if isinstance(message, tuple):
             print(message)
