@@ -1,6 +1,6 @@
 # A bunch of experiments with LLMs
 
-## Build RAG application with local LLMs
+## Build RAG/TOOL application with local LLMs
 
 ### Install and run Ollama:
 
@@ -67,8 +67,7 @@
 ![这本书主要讲的是什么故事?](images/graphrag_sample3.png)
 ![langchain_rag_questions](images/langchain_rag_sample1.png)
 
-### Run AgenticTool to utilize LLM's power to execute all kinds of small tasks.
-
+### Run AgenticTool to experience simple ai-agent
 
 ```bash
 # make sure your python3 version >= 3.10.12
