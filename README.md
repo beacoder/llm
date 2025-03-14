@@ -65,6 +65,8 @@
 
 # change inputs for different task, e.g: inputs = {"messages": [("user", task_prompt + task3)]}
 ~/workspace/ai$ python ./tool/bin/agentic_tool.py
+
+# NOTE: for convenience, could get input get web-page, e.g: streamlit run agentc_tool.py 
 ```
 
 ### Results
