@@ -63,7 +63,7 @@
 ~/workspace/ai$ source tool_env/bin/activate
 ~/workspace/ai$ pip install -r tool/requirements.txt
 
-# change inputs to for different task, e.g: inputs = {"messages": [("user", task_prompt + task3)]}
+# change inputs for different task, e.g: inputs = {"messages": [("user", task_prompt + task3)]}
 ~/workspace/ai$ python ./tool/bin/agentic_tool.py
 ```
 
