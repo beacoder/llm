@@ -54,19 +54,6 @@
 # NOTE: global_query is not working due to graphrag code broken
 ```
 
-### Results
-
-```bash
-# The model used for these images is qwen2.5, as it's good at Chinese.
-
-# NOTE: The result shows AgenticRAG beats GraphRAG most of the time, strange...
-```
-
-![西门庆和潘金莲什么关系?](images/graphrag_sample1.png)
-![这个章节中，西门庆有几个老婆，他们的关系如何?](images/graphrag_sample2.png)
-![这本书主要讲的是什么故事?](images/graphrag_sample3.png)
-![langchain_rag_questions](images/langchain_rag_sample1.png)
-
 ### Run AgenticTool to experience simple ai-agent
 
 ```bash
@@ -80,4 +67,16 @@
 ~/workspace/ai$ python ./tool/bin/agentic_tool.py
 ```
 
-![create_10_files_with_poetry](images/video.webm)
+### Results
+
+```bash
+# The model used for these images is qwen2.5, as it's good at Chinese.
+
+# NOTE: The result shows AgenticRAG beats GraphRAG most of the time, strange...
+```
+
+![西门庆和潘金莲什么关系?](images/graphrag_sample1.png)
+![这个章节中，西门庆有几个老婆，他们的关系如何?](images/graphrag_sample2.png)
+![这本书主要讲的是什么故事?](images/graphrag_sample3.png)
+![langchain_rag_questions](images/langchain_rag_sample1.png)
+![create_10_files_with_poetry](images/video.mp4)
