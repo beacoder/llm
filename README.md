@@ -66,3 +66,17 @@
 ![这个章节中，西门庆有几个老婆，他们的关系如何?](images/graphrag_sample2.png)
 ![这本书主要讲的是什么故事?](images/graphrag_sample3.png)
 ![langchain_rag_questions](images/langchain_rag_sample1.png)
+
+### Run AgenticTool to utilize LLM's power to execute all kinds of small tasks.
+
+
+```bash
+# make sure your python3 version >= 3.10.12
+
+~/workspace/ai$ python3 -m venv tool_env
+~/workspace/ai$ source tool_env/bin/activate
+~/workspace/ai$ pip install -r tool/requirements.txt
+
+# change inputs to for different task, e.g: inputs = {"messages": [("user", task_prompt + task3)]}
+~/workspace/ai$ python ./tool/bin/agentic_tool.py
+```
