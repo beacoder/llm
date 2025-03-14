@@ -79,3 +79,5 @@
 # change inputs to for different task, e.g: inputs = {"messages": [("user", task_prompt + task3)]}
 ~/workspace/ai$ python ./tool/bin/agentic_tool.py
 ```
+
+![create_10_files_with_poetry](images/video.webm)
