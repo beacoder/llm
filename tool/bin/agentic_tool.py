@@ -36,11 +36,11 @@ prompt = ChatPromptTemplate.from_messages(
 
 # react_agent @see https://langchain-ai.github.io/langgraph/reference/prebuilt/#langgraph.prebuilt.chat_agent_executor.create_react_agent
 #
-# Task -> Agent -> Tool_Call -> Tool_Result -> Done
-#           ^                       |
-#           |-----------------------+
+# Task -> Agent -> Tool_Calls -> Tool -> Tool_Result -> Done
+#           ^                                |
+#           |--------------------------------+
 #
-# Detailed execution:
+# Execution:
 # 1.The agent node calls the LLM with the messages list (after applying the messages modifier).
 # 2.If the resulting AIMessage contains tool_calls, the graph will then call the tools.
 # 3.The tools node executes the tools (1 tool per tool_call) and adds the responses to the messages list as ToolMessage objects.
@@ -93,7 +93,10 @@ def run_script(script_program: str, script_file: str, script_args: str):
     except Exception as e:
         return str(e)
 
-task1= "list all files in this directory '~/workspace/ai'"
+task1= """
+1.create a new directory '~/workspace/ai/testing'
+2.create 10 text files in this directory, each file with a poetry with at least 100 words.
+"""
 
 task2 = """
 1.create ~/workspace/ai/tool_script.py, it has following functions: it will print current time-stamp
@@ -108,7 +111,7 @@ task3= """
 def main():
     tools = [create_file, make_directory, run_command, run_script]
     agent = create_react_agent(llm, tools, state_modifier=format_for_model)
-    inputs = {"messages": [("user", task_prompt + task3)]}
+    inputs = {"messages": [("user", task_prompt + task1)]}
 
     for s in agent.stream(inputs, stream_mode="values"):
         message = s["messages"][-1]
