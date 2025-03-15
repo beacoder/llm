@@ -33,7 +33,8 @@ def format_for_model(state: AgentState):
 # redirect all output to streamlit
 class StdOutRedirector:
     def write(self, msg):
-        st.write(msg)
+        msg = msg.replace("\n", "\n\n")
+        st.markdown(msg)
 
 sys.stdout = StdOutRedirector()
 sys.stderr = StdOutRedirector()
@@ -65,6 +66,8 @@ prompt = ChatPromptTemplate.from_messages(
     ]
 )
 
+# default timeout for executing command/script is 5 minutes
+SHELL_TIMEOUT=300
 
 # tools definitions
 # @note remember to return either a result or a message to inform the LLM
@@ -113,10 +116,17 @@ def run_command(command: str):
         command: Command to run
     """
     try:
-        result = subprocess.run(command, check=True, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        result = subprocess.run(command,
+                                check=True,
+                                shell=True,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE,
+                                timeout=SHELL_TIMEOUT)
         return result.stdout.decode()
     except subprocess.CalledProcessError as e:
         return f"Failed to run {command}: {e.stderr.decode()}"
+    except subprocess.TimeoutExpired as e:
+        return f"Run {command} timed out"
 
 @tool
 def run_script(script_program: str, script_file: str, script_args: str):
@@ -132,10 +142,13 @@ def run_script(script_program: str, script_file: str, script_args: str):
                                 check=True,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE,
-                                text=True)
+                                text=True,
+                                timeout=SHELL_TIMEOUT)
         return result.stdout
     except subprocess.CalledProcessError as e:
         return f"Failed to run {script_file}: {e.stderre.decode()}"
+    except subprocess.TimeoutExpired as e:
+        return f"Run {script_file} timed out"
 
 
 # enter point
