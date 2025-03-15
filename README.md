@@ -84,7 +84,7 @@
 # 1.Create a minesweeper game using html,css,js in directory "~/workspace/ai/minesweeper"
 # 2.list all the content of these new files.
 ```
-![agentic_tool_1.png](images/agentic_tool_1.png)
-![agentic_tool_2.png](images/agentic_tool_2.png)
-![agentic_tool_3.png](images/agentic_tool_3.png)
-![agentic_tool_4.png](images/agentic_tool_4.png)
+![agentic_tool_1.png](images/tool_1.png)
+![agentic_tool_2.png](images/tool_2.png)
+![agentic_tool_3.png](images/tool_3.png)
+![agentic_tool_4.png](images/tool_4.png)
