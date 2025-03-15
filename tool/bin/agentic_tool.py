@@ -36,6 +36,7 @@ class StdOutRedirector:
         st.write(msg)
 
 sys.stdout = StdOutRedirector()
+sys.stderr = StdOutRedirector()
 
 
 # LLM settings
