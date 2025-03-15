@@ -34,7 +34,7 @@ def format_for_model(state: AgentState):
 class StdOutRedirector:
     def write(self, msg):
         msg = msg.replace("\n", "\n\n")
-        st.markdown(msg)
+        st.write(msg)
 
 sys.stdout = StdOutRedirector()
 sys.stderr = StdOutRedirector()
@@ -70,7 +70,7 @@ prompt = ChatPromptTemplate.from_messages(
 SHELL_TIMEOUT=300
 
 # increase recursion_limit to avoid agent stops prematurely
-RECURSION_LIMIT=100
+RECURSION_LIMIT=1000
 
 
 # tools definitions
@@ -127,32 +127,32 @@ def run_command(command: str):
                                 stderr=subprocess.PIPE,
                                 timeout=SHELL_TIMEOUT)
         return result.stdout.decode()
-    except subprocess.CalledProcessError as e:
-        return f"Failed to run {command}: {e}"
     except subprocess.TimeoutExpired as e:
         return f"Run {command} timed out"
+    except Exception as e:
+        return f"Failed to run {command}: {e}"
 
 @tool
-def run_script(script_program: str, script_file: str, script_args: str):
+def run_script(program: str, file: str, args: str = ""):
     """Run the script along with its specified arguments using the program.
 
     Args:
-        script_program: Program to run the the script
-        script_file:    Path to the script to run.  Supports relative paths and ~
-        script_args:    Args for script to run
+        program: Program to run the the script
+        file:    Path to the script to run.  Supports relative paths and ~
+        args:    Args for script to run
     """
     try:
-        result = subprocess.run([script_program, script_file,script_args],
+        result = subprocess.run([program, file, args],
                                 check=True,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE,
                                 text=True,
                                 timeout=SHELL_TIMEOUT)
         return result.stdout
-    except subprocess.CalledProcessError as e:
-        return f"Failed to run {script_file}: {e}"
     except subprocess.TimeoutExpired as e:
-        return f"Run {script_file} timed out"
+        return f"Run {file} timed out"
+    except Exception as e:
+        return f"Failed to run {file}: {e}"
 
 
 # streamlit settings
