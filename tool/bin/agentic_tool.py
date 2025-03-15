@@ -121,12 +121,14 @@ def run_command(command: str):
     """
     try:
         result = subprocess.run(command,
-                                check=False,
                                 shell=True,
                                 capture_output=True,
                                 text=True,
                                 timeout=SHELL_TIMEOUT)
-        return result.stdout
+        if result.returncode == 0:
+            return result.stdout
+        else:
+            return result.stderr
     except subprocess.TimeoutExpired as e:
         return f"Run {command} timed out"
     except Exception as e:
@@ -142,12 +144,16 @@ def run_script(program: str, file: str, args: str = ""):
         args:    Args for script to run
     """
     try:
-        result = subprocess.run([program, file, args],
-                                check=False,
+        command = " ".join([program, file, args])
+        result = subprocess.run(command,
+                                shell=True,
                                 capture_output=True,
                                 text=True,
                                 timeout=SHELL_TIMEOUT)
-        return result.stdout
+        if result.returncode == 0:
+            return result.stdout
+        else:
+            return result.stderr
     except subprocess.TimeoutExpired as e:
         return f"Run {file} timed out"
     except Exception as e:
