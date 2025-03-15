@@ -81,7 +81,9 @@
 
 ```bash
 # TOOL task:
-# 1.create a new directory '~/workspace/ai/testing'
-# 2.create 3 text files in this directory, each file with a poetry with at least 100 words.
+# 1.Create a minesweeper game using html,css,js in directory "~/workspace/ai/minesweeper"
+# 2.list all the content of these new files.
 ```
-![create_3_files_with_poetry](images/agentic_tool_capture.mp4)
+![agentic_tool_1.png](images/agentic_tool_1.png)
+![agentic_tool_2.png](images/agentic_tool_2.png)
+![agentic_tool_3.png](images/agentic_tool_3.png)
