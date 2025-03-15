@@ -125,7 +125,7 @@ def run_command(command: str):
                                 timeout=SHELL_TIMEOUT)
         return result.stdout.decode()
     except subprocess.CalledProcessError as e:
-        return f"Failed to run {command}: {e.stderr.decode()}"
+        return f"Failed to run {command}: {e}"
     except subprocess.TimeoutExpired as e:
         return f"Run {command} timed out"
 
@@ -147,7 +147,7 @@ def run_script(script_program: str, script_file: str, script_args: str):
                                 timeout=SHELL_TIMEOUT)
         return result.stdout
     except subprocess.CalledProcessError as e:
-        return f"Failed to run {script_file}: {e.stderre.decode()}"
+        return f"Failed to run {script_file}: {e}"
     except subprocess.TimeoutExpired as e:
         return f"Run {script_file} timed out"
 
