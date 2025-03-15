@@ -69,6 +69,7 @@ prompt = ChatPromptTemplate.from_messages(
 # default timeout for executing command/script is 5 minutes
 SHELL_TIMEOUT=300
 
+
 # tools definitions
 # @note remember to return either a result or a message to inform the LLM
 @tool
@@ -164,7 +165,6 @@ def run_agent(user_input: str):
             print(message)
         else:
             message.pretty_print()
-
 
 def main():
     user_input = st.text_area("Please input your task for Agentic_Tool:")
