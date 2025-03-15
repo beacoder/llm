@@ -10,7 +10,7 @@ import os, subprocess, sys
 import streamlit as st
 
 
-# react_agent @see https://langchain-ai.github.io/langgraph/reference/prebuilt/#langgraph.prebuilt.chat_agent_executor.create_react_agent
+# react_agent @see https://langchain-ai.github.io/langgraph/how-tos/create-react-agent
 #
 # Task -> Agent -> Tool_Calls -> Tool -> Tool_Result -> Done
 #           ^                                |
