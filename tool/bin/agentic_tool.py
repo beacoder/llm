@@ -69,6 +69,9 @@ prompt = ChatPromptTemplate.from_messages(
 # default timeout for executing command/script is 5 minutes
 SHELL_TIMEOUT=300
 
+# increase recursion_limit to avoid agent stops prematurely
+RECURSION_LIMIT=100
+
 
 # tools definitions
 # @note remember to return either a result or a message to inform the LLM
@@ -152,14 +155,33 @@ def run_script(script_program: str, script_file: str, script_args: str):
         return f"Run {script_file} timed out"
 
 
+# streamlit settings
+def prepare_history():
+    if 'history' not in st.session_state:
+        st.session_state.history = []
+    if 'current_text' not in st.session_state:
+        st.session_state.current_text = "list current directory."
+    st.sidebar.title("History")
+    for idx, entry in enumerate(st.session_state.history):
+        if st.sidebar.button(entry, key=f"history_{idx}"):
+            st.session_state.current_text = entry
+            st.rerun()
+    if st.sidebar.button("Clear History"):
+        st.session_state.history = []
+        st.rerun()
+
+def save_to_history(user_input: str):
+    if user_input and user_input not in st.session_state.history:
+        st.session_state.history.append(user_input)
+        st.session_state.current_text = user_input
+
+
 # enter point
 def run_agent(user_input: str):
     tools = [create_file, make_directory, run_command, run_script]
     agent = create_react_agent(llm, tools, state_modifier=format_for_model)
     inputs = {"messages": [("user", task_prompt + user_input)]}
-
-    # increase recursion_limit to avoid agent stops prematurely
-    for s in agent.stream(inputs, stream_mode="values", config={"recursion_limit": 100}):
+    for s in agent.stream(inputs, stream_mode="values", config={"recursion_limit": RECURSION_LIMIT}):
         message = s["messages"][-1]
         if isinstance(message, tuple):
             print(message)
@@ -167,8 +189,11 @@ def run_agent(user_input: str):
             message.pretty_print()
 
 def main():
-    user_input = st.text_area("Please input your task for Agentic_Tool:")
+    prepare_history()
+    st.title("Agentic Tool")
+    user_input = st.text_area("Please input your task:", value=st.session_state.current_text, key="text_area")
     if st.button("Submit") and user_input:
+        save_to_history(user_input)
         run_agent(user_input)
 
 
