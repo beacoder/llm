@@ -121,12 +121,12 @@ def run_command(command: str):
     """
     try:
         result = subprocess.run(command,
-                                check=True,
+                                check=False,
                                 shell=True,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE,
+                                capture_output=True,
+                                text=True,
                                 timeout=SHELL_TIMEOUT)
-        return result.stdout.decode()
+        return result.stdout
     except subprocess.TimeoutExpired as e:
         return f"Run {command} timed out"
     except Exception as e:
@@ -143,9 +143,8 @@ def run_script(program: str, file: str, args: str = ""):
     """
     try:
         result = subprocess.run([program, file, args],
-                                check=True,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE,
+                                check=False,
+                                capture_output=True,
                                 text=True,
                                 timeout=SHELL_TIMEOUT)
         return result.stdout
