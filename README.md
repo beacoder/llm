@@ -87,3 +87,4 @@
 ![agentic_tool_1.png](images/agentic_tool_1.png)
 ![agentic_tool_2.png](images/agentic_tool_2.png)
 ![agentic_tool_3.png](images/agentic_tool_3.png)
+![agentic_tool_4.png](images/agentic_tool_4.png)
