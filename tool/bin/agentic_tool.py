@@ -129,8 +129,6 @@ def run_command(command: str):
             return result.stdout
         else:
             return result.stderr
-    except subprocess.TimeoutExpired as e:
-        return f"Run {command} timed out"
     except Exception as e:
         return f"Failed to run {command}: {e}"
 
@@ -154,8 +152,6 @@ def run_script(program: str, file: str, args: str = ""):
             return result.stdout
         else:
             return result.stderr
-    except subprocess.TimeoutExpired as e:
-        return f"Run {file} timed out"
     except Exception as e:
         return f"Failed to run {file}: {e}"
 
