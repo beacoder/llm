@@ -5,11 +5,6 @@ import subprocess
 import uuid
 
 
-"""
-This script contains LLM tools suited for docker.
-"""
-
-
 # tools definitions
 # @note remember to return either a result or a message to inform the LLM
 @tool
