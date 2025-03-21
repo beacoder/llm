@@ -2,11 +2,6 @@ from langchain_core.tools import tool
 import os, subprocess, sys
 
 
-"""
-This script contains LLM tools suited for local file system.
-"""
-
-
 # default timeout for executing command/script is 5 minutes
 SHELL_TIMEOUT=300
 
