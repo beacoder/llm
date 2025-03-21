@@ -54,7 +54,7 @@
 # NOTE: global_query is not working due to graphrag code broken
 ```
 
-### Run AgenticTool to experience simple ai-agent
+### Run AgenticTool to explore AI-Agent
 
 ```bash
 # make sure your python3 version >= 3.10.12
