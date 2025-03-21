@@ -96,7 +96,7 @@ def save_to_state(user_input: str):
 
 # entry point
 def run_agent(user_input: str):
-    tools = init_tools(False)
+    tools = init_tools()
     agent = create_react_agent(llm, tools, state_modifier=format_for_model)
     inputs = {"messages": [("user", task_prompt + user_input)]}
     for s in agent.stream(inputs, stream_mode="values", config={"recursion_limit": RECURSION_LIMIT}):
