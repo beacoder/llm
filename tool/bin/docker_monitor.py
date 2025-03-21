@@ -2,7 +2,7 @@ import subprocess
 import time
 
 
-MAX_CONTAINER_LIMIT = 0
+MAX_CONTAINER_LIMIT = 10
 
 def get_container_uptime():
     containers = subprocess.check_output(["docker", "ps", "--format", "{{.ID}} {{.RunningFor}}"])
