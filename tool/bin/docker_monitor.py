@@ -2,6 +2,11 @@ import subprocess
 import time
 
 
+"""
+This script keeps monitoring containers, and start killing longest running container every 5 minutes.
+"""
+
+
 MAX_CONTAINER_LIMIT = 10
 
 def get_container_uptime():
