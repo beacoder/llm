@@ -1,9 +1,9 @@
 from langchain_core.tools import tool
 import docker
+import os
 import streamlit as st
 import subprocess
 import uuid
-import os
 
 
 # tools definitions
@@ -18,13 +18,12 @@ def create_file(path: str, filename: str, content: str):
         content:  The content to write to the file
     """
     try:
-        pid = os.getpid()
         user_id= get_user_id()
         # make sure sandbox is ready
         get_or_create_sandbox(user_id)
         sandbox_name = f"sandbox_{user_id}"
         file_path = f"{sandbox_name}:{path}/{filename}"
-        temp_file = os.path.expanduser(f"~/{pid}_{filename}")
+        temp_file = os.path.expanduser(f"~/{user_id}_{filename}")
         with open(temp_file, 'w') as file:
             file.write(content)
         result = subprocess.run(["docker", "cp", temp_file, file_path], capture_output=True, text=True)
