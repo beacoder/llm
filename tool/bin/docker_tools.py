@@ -3,6 +3,7 @@ import docker
 import streamlit as st
 import subprocess
 import uuid
+import os
 
 
 # tools definitions
@@ -17,17 +18,17 @@ def create_file(path: str, filename: str, content: str):
         content:  The content to write to the file
     """
     try:
+        pid = os.getpid()
         user_id= get_user_id()
         # make sure sandbox is ready
         get_or_create_sandbox(user_id)
         sandbox_name = f"sandbox_{user_id}"
         file_path = f"{sandbox_name}:{path}/{filename}"
-        local_path = "/home/huming/workspace/ai/tool/temp_file"
-        with open("/home/huming/workspace/ai/tool/temp_file", 'w') as file:
+        temp_file = os.path.expanduser(f"~/{pid}_{filename}")
+        with open(temp_file, 'w') as file:
             file.write(content)
-        # command cost time, so don't remove the temp_file
-        command = f"docker cp {local_path} {file_path}"
-        result = subprocess.run(command, shell=True, capture_output=True, text=True)
+        result = subprocess.run(["docker", "cp", temp_file, file_path], capture_output=True, text=True)
+        os.remove(temp_file)
         if result.returncode == 0:
             return f"Created file {filename} in {path}"
         else:
