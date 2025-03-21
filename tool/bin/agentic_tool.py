@@ -10,6 +10,11 @@ import sys
 import streamlit as st
 
 
+"""
+This script implements a LLM react agent with tool-calling.
+"""
+
+
 # react_agent @see https://langchain-ai.github.io/langgraph/how-tos/create-react-agent
 #
 # Task -> Agent -> Tool_Calls -> Tool -> Tool_Result -> Done
@@ -96,7 +101,7 @@ def save_to_state(user_input: str):
 
 # entry point
 def run_agent(user_input: str):
-    tools = init_tools()
+    tools = init_tools(False)
     agent = create_react_agent(llm, tools, state_modifier=format_for_model)
     inputs = {"messages": [("user", task_prompt + user_input)]}
     for s in agent.stream(inputs, stream_mode="values", config={"recursion_limit": RECURSION_LIMIT}):
