@@ -10,11 +10,6 @@ import sys
 import streamlit as st
 
 
-"""
-This script implements a LLM react agent with tool-calling.
-"""
-
-
 # react_agent @see https://langchain-ai.github.io/langgraph/how-tos/create-react-agent
 #
 # Task -> Agent -> Tool_Calls -> Tool -> Tool_Result -> Done
