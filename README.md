@@ -63,6 +63,10 @@
 ~/workspace/ai$ source tool_env/bin/activate
 ~/workspace/ai$ pip install -r tool/requirements.txt
 
+# support both local_tools and docker_tools.
+# for local_tools, tools will be executed on your file system.
+# for docker_tools, tools will be run on docker instance for each user (identified by ip)
+# note: for docker_tools, need to run "docker pull python:3.10.12" first
 ~/workspace/ai$ streamlit run ./tool/bin/agentic_tool.py
 ```
 
