@@ -6,7 +6,7 @@ from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import create_react_agent
 from typing import List
 from typing_extensions import TypedDict
-import os, subprocess, sys
+import sys
 import streamlit as st
 
 
@@ -23,22 +23,6 @@ import streamlit as st
 # 4.The agent node then calls the LLM again.
 # 5.The process repeats until no more tool_calls are present in the response.
 # 6.The agent then returns the full list of messages as a dictionary containing the key "messages".
-class AgentState(TypedDict):
-    messages: List[BaseMessage]
-
-def format_for_model(state: AgentState):
-    return prompt.invoke({"messages": state["messages"]})
-
-
-# redirect all output to streamlit
-class StdOutRedirector:
-    def write(self, msg):
-        msg = msg.replace("\n", "\n\n")
-        st.write(msg)
-
-sys.stdout = StdOutRedirector()
-sys.stderr = StdOutRedirector()
-
 
 # LLM settings
 llm = ChatOllama(model="qwen2.5", temperature=0.25)
@@ -66,102 +50,36 @@ prompt = ChatPromptTemplate.from_messages(
     ]
 )
 
-# default timeout for executing command/script is 5 minutes
-SHELL_TIMEOUT=300
-
 # increase recursion_limit to avoid agent stops prematurely
 RECURSION_LIMIT=1000
 
+class AgentState(TypedDict):
+    messages: List[BaseMessage]
 
-# tools definitions
-# @note remember to return either a result or a message to inform the LLM
-@tool
-def create_file(path: str, filename: str, content: str):
-    """Create a new file in a path with the specified content.
+def format_for_model(state: AgentState):
+    return prompt.invoke({"messages": state["messages"]})
 
-    Args:
-        path:     The directory where to create the file
-        filename: The name of the file to create
-        content:  The content to write to the file
-    """
-    try:
-        expanded_path = os.path.expanduser(path + "/" + filename)
-        with open(expanded_path, 'w') as file:
-            file.write(content)
-            return f"Created file {filename} in {path}"
-    except Exception as e:
-        return f"Failed to create file {filename} in {path}: {e}"
+def redirect_output_to_streamlit():
+    class StdOutRedirector:
+        def write(self, msg):
+            msg = msg.replace("\n", "\n\n")
+            st.write(msg)
+    sys.stdout = StdOutRedirector()
+    sys.stderr = StdOutRedirector()
 
-@tool
-def make_directory(name: str, parent: str):
-    """Create a new directory with the given name in the specified parent directory.
+def init_tools(use_local_tool = True):
+    if use_local_tool:
+        from local_tools import (create_file, make_directory, run_command, run_script)
+    else:
+        from docker_tools import (create_file, make_directory, run_command, run_script)
+    return [create_file, make_directory, run_command, run_script]
 
-    Args:
-        name:   The name of the new directory to create, e.g. testdir
-        parent: The parent directory where the new directory should be created, e.g. /tmp
-    """
-    try:
-        dir_path = parent + "/" +name
-        expanded_dir_path = os.path.expanduser(dir_path)
-        os.makedirs(expanded_dir_path, exist_ok=True)
-        if os.path.exists(expanded_dir_path):
-            return f"Directory {name} created/verified in {parent}"
-        else:
-            return f"Failed to create directory {name} in {parent}"
-    except Exception as e:
-        return f"Failed to create directory {name} in {parent}: {e}"
-
-# super-powerful, capable of replacing numerous existing tools.
-@tool
-def run_command(command: str):
-    """Run a command.
-
-    Args:
-        command: Command to run
-    """
-    try:
-        result = subprocess.run(command,
-                                shell=True,
-                                capture_output=True,
-                                text=True,
-                                timeout=SHELL_TIMEOUT)
-        if result.returncode == 0:
-            return result.stdout
-        else:
-            return result.stderr
-    except Exception as e:
-        return f"Failed to run {command}: {e}"
-
-@tool
-def run_script(program: str, file: str, args: str = ""):
-    """Run the script along with its specified arguments using the program.
-
-    Args:
-        program: Program to run the the script
-        file:    Path to the script to run.  Supports relative paths and ~
-        args:    Args for script to run
-    """
-    try:
-        command = " ".join([program, file, args])
-        result = subprocess.run(command,
-                                shell=True,
-                                capture_output=True,
-                                text=True,
-                                timeout=SHELL_TIMEOUT)
-        if result.returncode == 0:
-            return result.stdout
-        else:
-            return result.stderr
-    except Exception as e:
-        return f"Failed to run {file}: {e}"
-
-
-# streamlit settings
-def prepare_history():
+def init_session_state():
     if 'history' not in st.session_state:
         st.session_state.history = []
     if 'current_text' not in st.session_state:
         st.session_state.current_text = "list current directory."
+    # UI config
     st.sidebar.title("History")
     for idx, entry in enumerate(st.session_state.history):
         if st.sidebar.button(entry, key=f"history_{idx}"):
@@ -171,15 +89,14 @@ def prepare_history():
         st.session_state.history = []
         st.rerun()
 
-def save_to_history(user_input: str):
+def save_to_state(user_input: str):
     if user_input and user_input not in st.session_state.history:
         st.session_state.history.append(user_input)
         st.session_state.current_text = user_input
 
-
-# enter point
+# entry point
 def run_agent(user_input: str):
-    tools = [create_file, make_directory, run_command, run_script]
+    tools = init_tools(False)
     agent = create_react_agent(llm, tools, state_modifier=format_for_model)
     inputs = {"messages": [("user", task_prompt + user_input)]}
     for s in agent.stream(inputs, stream_mode="values", config={"recursion_limit": RECURSION_LIMIT}):
@@ -190,11 +107,12 @@ def run_agent(user_input: str):
             message.pretty_print()
 
 def main():
-    prepare_history()
+    redirect_output_to_streamlit()
+    init_session_state()
     st.title("Agentic Tool")
     user_input = st.text_area("Please input your task:", value=st.session_state.current_text, key="text_area")
     if st.button("Submit") and user_input:
-        save_to_history(user_input)
+        save_to_state(user_input)
         run_agent(user_input)
 
 
