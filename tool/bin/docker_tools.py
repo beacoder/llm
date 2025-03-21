@@ -1,8 +1,8 @@
 from langchain_core.tools import tool
 import docker
 import streamlit as st
-import requests
 import subprocess
+import uuid
 
 
 # tools definitions
@@ -17,7 +17,7 @@ def create_file(path: str, filename: str, content: str):
         content:  The content to write to the file
     """
     try:
-        user_id= get_user_ip()
+        user_id= get_user_id()
         # make sure sandbox is ready
         get_or_create_sandbox(user_id)
         sandbox_name = f"sandbox_{user_id}"
@@ -44,7 +44,7 @@ def make_directory(name: str, parent: str):
         parent: The parent directory where the new directory should be created, e.g. /tmp
     """
     try:
-        sandbox = get_or_create_sandbox(get_user_ip())
+        sandbox = get_or_create_sandbox(get_user_id())
         dir_path = parent + "/" +name
         result = execute_in_sandbox(sandbox, f"mkdir {dir_path}")
         if result == "":
@@ -63,7 +63,7 @@ def run_command(command: str):
         command: Command to run
     """
     try:
-        sandbox = get_or_create_sandbox(get_user_ip())
+        sandbox = get_or_create_sandbox(get_user_id())
         return execute_in_sandbox(sandbox, command)
     except Exception as e:
         return f"Failed to run {command}: {e}"
@@ -78,7 +78,7 @@ def run_script(program: str, file: str, args: str = ""):
         args:    Args for script to run
     """
     try:
-        sandbox = get_or_create_sandbox(get_user_ip())
+        sandbox = get_or_create_sandbox(get_user_id())
         command = " ".join([program, file, args])
         return execute_in_sandbox(sandbox, command)
     except Exception as e:
@@ -86,8 +86,11 @@ def run_script(program: str, file: str, args: str = ""):
 
 
 # docker APIs
-def get_user_ip():
-    return requests.get('https://ipinfo.io/json').json()['ip']
+def get_user_id():
+    if 'user_uuid' not in st.session_state:
+        st.session_state.user_uuid = uuid.uuid4()
+        print(f"current user id is: {st.session_state.user_uuid}")
+    return st.session_state.user_uuid
 
 def get_or_create_sandbox(user_id):
     container = None
