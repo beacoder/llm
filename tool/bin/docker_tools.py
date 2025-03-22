@@ -127,3 +127,13 @@ def cleanup_sandbox(user_id):
         st.session_state.current_sandbox = None
     except Exception as e:
         return print(f"Failed to cleanup sandbox for user {user_id}: {e}")
+
+def check_file_existence(file_path: str):
+    sandbox = get_or_create_sandbox(get_user_id())
+    result = sandbox.exec_run(f"test -f {file_path} && echo 'exists' || echo 'not found'")
+    return "exists" in result.output.decode()
+
+def check_path_existence(path: str):
+    sandbox = get_or_create_sandbox(get_user_id())
+    result = sandbox.exec_run(f"test -e {path} && echo 'exists' || echo 'not found'")
+    return "exists" in result.output.decode()
