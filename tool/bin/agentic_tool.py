@@ -92,7 +92,6 @@ def init_session_state():
 def save_to_state(user_input: str):
     if user_input and user_input not in st.session_state.history:
         st.session_state.history.append(user_input)
-        st.session_state.current_text = user_input
 
 # entry point
 def run_agent(user_input: str):
