@@ -66,7 +66,7 @@ def run_command(command: str):
         sandbox = get_or_create_sandbox(get_user_id())
         result = execute_in_sandbox(sandbox, command)
         if result == "":
-            return f"Command successfully executed."
+            return "Command successfully executed."
         else:
             return result
     except Exception as e:
@@ -86,7 +86,7 @@ def run_script(program: str, file: str, args: str = ""):
         command = " ".join([program, file, args])
         result = execute_in_sandbox(sandbox, command)
         if result == "":
-            return f"Script successfully executed."
+            return "Script successfully executed."
         else:
             return result
     except Exception as e:
