@@ -1,33 +1,25 @@
+import docker
 import subprocess
 import time
 
 
 MAX_CONTAINER_LIMIT = 10
 
-def get_container_uptime():
-    containers = subprocess.check_output(["docker", "ps", "--format", "{{.ID}} {{.RunningFor}}"])
-    uptime_data = []
-    for line in containers.decode().strip().split('\n'):
-        try:
-            cid, uptime, time_unit, *_ = line.split()
-            uptime_data.append((cid, uptime, time_unit))
-        except:
-            continue
-    return uptime_data
+client = docker.from_env()
 
-def kill_longest_running_container(uptime_data):
-    longest_cid, uptime, time_unit = max(uptime_data, key=lambda x: x[1])
-    subprocess.run(["docker", "kill", longest_cid])
-    print(f"kill container {longest_cid}, since it's been up for longest time: {uptime} {time_unit}")
-
+def kill_longest_running_container():
+    containers = client.containers.list()
+    longest_running_container = min(containers, key=lambda c: c.attrs['State']['StartedAt'])
+    container_id = longest_running_container.attrs['Id']
+    subprocess.run(["docker", "kill", container_id])
+    print(f"kill container {container_id}, since it's been up for longest time.")
 
 def main():
     while True:
-        uptime_data = get_container_uptime()
-        while (uptime_data and len(uptime_data) > MAX_CONTAINER_LIMIT):
-            kill_longest_running_container(uptime_data)
-            time.sleep(1)
-            uptime_data = get_container_uptime()
+        containers = client.containers.list()
+        while (containers and len(containers) > MAX_CONTAINER_LIMIT):
+            kill_longest_running_container()
+            containers = client.containers.list()
         time.sleep(300)  # Check every 5 minutes
 
 
