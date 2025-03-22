@@ -112,8 +112,8 @@ def main():
     st.title("Agentic Tool")
     user_input = st.text_area("Please input your task:", value=st.session_state.current_text, key="text_area")
     if st.button("Submit") and user_input:
-        save_to_state(user_input)
         run_agent(user_input)
+        save_to_state(user_input)
 
 
 if __name__ == "__main__":
