@@ -64,7 +64,11 @@ def run_command(command: str):
     """
     try:
         sandbox = get_or_create_sandbox(get_user_id())
-        return execute_in_sandbox(sandbox, command)
+        result = execute_in_sandbox(sandbox, command)
+        if result == "":
+            return f"Command successfully executed."
+        else:
+            return result
     except Exception as e:
         return f"Failed to run {command}: {e}"
 
@@ -80,7 +84,11 @@ def run_script(program: str, file: str, args: str = ""):
     try:
         sandbox = get_or_create_sandbox(get_user_id())
         command = " ".join([program, file, args])
-        return execute_in_sandbox(sandbox, command)
+        result = execute_in_sandbox(sandbox, command)
+        if result == "":
+            return f"Script successfully executed."
+        else:
+            return result
     except Exception as e:
         return f"Failed to run script {file}: {e}"
 
