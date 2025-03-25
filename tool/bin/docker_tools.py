@@ -44,7 +44,7 @@ def make_directory(name: str, parent: str):
     """
     try:
         sandbox = get_or_create_sandbox(get_user_id())
-        dir_path = parent + "/" +name
+        dir_path = parent + "/" + name
         result = execute_in_sandbox(sandbox, f"mkdir {dir_path}")
         if result == "":
             return f"Directory {name} created/verified in {parent}"
