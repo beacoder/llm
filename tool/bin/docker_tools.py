@@ -3,7 +3,6 @@ import docker
 import os
 import streamlit as st
 import subprocess
-import uuid
 
 
 # tools definitions
@@ -18,7 +17,7 @@ def create_file(path: str, filename: str, content: str):
         content:  The content to write to the file
     """
     try:
-        user_id= get_user_id()
+        user_id = get_user_id()
         # make sure sandbox is ready
         get_or_create_sandbox(user_id)
         sandbox_name = f"sandbox_{user_id}"
@@ -45,7 +44,7 @@ def make_directory(name: str, parent: str):
     """
     try:
         sandbox = get_or_create_sandbox(get_user_id())
-        dir_path = parent + "/" + name
+        dir_path = parent + "/" +name
         result = execute_in_sandbox(sandbox, f"mkdir {dir_path}")
         if result == "":
             return f"Directory {name} created/verified in {parent}"
@@ -95,10 +94,8 @@ def run_script(program: str, file: str, args: str = ""):
 
 # docker APIs
 def get_user_id():
-    if 'user_uuid' not in st.session_state:
-        st.session_state.user_uuid = uuid.uuid4()
-        print(f"current user id is: {st.session_state.user_uuid}")
-    return st.session_state.user_uuid
+    # one process for one user
+    return os.getpid()
 
 def get_or_create_sandbox(user_id):
     container = None
@@ -132,16 +129,26 @@ def cleanup_sandbox(user_id):
         container = client.containers.get(f"sandbox_{user_id}")
         container.stop()
         container.remove()
-        st.session_state.current_sandbox = None
     except Exception as e:
         return print(f"Failed to cleanup sandbox for user {user_id}: {e}")
 
 def check_file_existence(file_path: str):
     sandbox = get_or_create_sandbox(get_user_id())
-    result = sandbox.exec_run(f"test -f {file_path} && echo 'exists' || echo 'not found'")
+    result = sandbox.exec_run(f"/bin/sh -c 'test -f \"{file_path}\" && echo exists || echo not found'")
     return "exists" in result.output.decode()
 
 def check_path_existence(path: str):
     sandbox = get_or_create_sandbox(get_user_id())
-    result = sandbox.exec_run(f"test -e {path} && echo 'exists' || echo 'not found'")
+    result = sandbox.exec_run(f"/bin/sh -c 'test -e \"{path}\" && echo exists || echo not found'")
     return "exists" in result.output.decode()
+
+def upload_file_to_docker(from_path: str, to_path: str):
+    user_id = get_user_id()
+    get_or_create_sandbox(user_id)
+    sandbox_name = f"sandbox_{user_id}"
+    to_path = f"{sandbox_name}:{to_path}"
+    result = subprocess.run(["docker", "cp", from_path, to_path], capture_output=True, text=True)
+    if result.returncode == 0:
+        print(f"File {from_path} successfully uploaded to {user_id}")
+    else:
+        print (f"Failed to upload file: {result.stderr}")
