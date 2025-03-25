@@ -6,8 +6,10 @@ from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import create_react_agent
 from typing import List
 from typing_extensions import TypedDict
-import sys
+import os
 import streamlit as st
+import sys
+from docker_tools import (get_user_id, check_path_existence, upload_file_to_docker)
 
 
 # react_agent @see https://langchain-ai.github.io/langgraph/how-tos/create-react-agent
@@ -108,11 +110,38 @@ def run_agent(user_input: str):
 def main():
     redirect_output_to_streamlit()
     init_session_state()
+
+    # UI
     st.title("Agentic Tool")
     user_input = st.text_area("Please input your task:", value=st.session_state.current_text, key="text_area")
-    if st.button("Submit") and user_input:
-        run_agent(user_input)
-        save_to_state(user_input)
+    user_submit = st.button("Submit")
+    upload_path = st.text_input("Please input upload path:")
+    uploaded_file = st.file_uploader("Upload files")
+
+    # Logic
+    if user_submit:
+        if user_input:
+            run_agent(user_input)
+            save_to_state(user_input)
+    elif upload_path:
+        if check_path_existence(upload_path):
+            if uploaded_file:
+                user_id = get_user_id()
+                temp_file = os.path.expanduser(f"~/{user_id}_{uploaded_file.name}")
+                with open(temp_file, 'w') as file:
+                    file.write(uploaded_file.read().decode("utf-8"))
+                upload_file_to_docker(temp_file, f"{upload_path}/{uploaded_file.name}")
+                os.remove(temp_file)
+            else:
+                st.write("Please upload file first.")
+        else:
+            st.write("The upload path not exist.")
+    # st.download_button(
+    #     label="下载示例文件",
+    #     data="这是示例文件的内容。",
+    #     file_name="example.txt",
+    #     mime="text/plain"
+    #  )
 
 
 if __name__ == "__main__":
