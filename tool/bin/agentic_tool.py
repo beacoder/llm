@@ -8,7 +8,8 @@ from typing_extensions import TypedDict
 import os
 import streamlit as st
 import sys
-from docker_tools import (get_user_id, check_path_existence, upload_file_to_docker)
+from docker_tools import (get_user_id, check_path_existence, upload_file_to_docker,
+                          check_file_existence, download_file_from_docker)
 
 
 # react_agent @see https://langchain-ai.github.io/langgraph/how-tos/create-react-agent
@@ -118,33 +119,46 @@ def main():
     uploaded_file = st.file_uploader("Upload files")
 
     # Logic
-    if user_submit:
-        if user_input:
-            run_agent(user_input)
-            save_to_state(user_input)
-    elif upload_path:
+    if user_submit and user_input:
+        run_agent(user_input)
+        save_to_state(user_input)
+    elif download_submit and download_file:
+        if check_file_existence(download_file):
+            file_name, file_extension = os.path.splitext(os.path.basename(download_file))
+            user_id = get_user_id()
+            temp_file = os.path.expanduser(f"~/{user_id}_{file_name}")
+            download_file_from_docker(download_file, temp_file)
+            download_data = None
+            try:
+                with open(temp_file, 'r') as file:
+                    download_data = file.read().decode("utf-8")
+            except Exception as e:
+                with open(temp_file, 'rb') as file:
+                    download_data = file.read()
+            os.remove(temp_file)
+            if download_data:
+                st.download_button(
+                    label="Download File",
+                    data=download_data,
+                    file_name=f"{file_name}",  # Use the provided extension
+                    mime="application/octet-stream"  # Generic MIME type for binary files
+                )
+        else:
+            st.write("The download file not exist.")
+    elif upload_path and uploaded_file:
         if check_path_existence(upload_path):
-            if uploaded_file:
-                user_id = get_user_id()
-                temp_file = os.path.expanduser(f"~/{user_id}_{uploaded_file.name}")
-                try:
-                    with open(temp_file, 'w') as file:
-                        file.write(uploaded_file.read().decode("utf-8"))
-                except Exception as e:
-                    with open(temp_file, 'wb') as file:
-                        file.write(uploaded_file.read())
-                upload_file_to_docker(temp_file, f"{upload_path}/{uploaded_file.name}")
-                os.remove(temp_file)
-            else:
-                st.write("Please upload file first.")
+            user_id = get_user_id()
+            temp_file = os.path.expanduser(f"~/{user_id}_{uploaded_file.name}")
+            try:
+                with open(temp_file, 'w') as file:
+                    file.write(uploaded_file.read().decode("utf-8"))
+            except Exception as e:
+                with open(temp_file, 'wb') as file:
+                    file.write(uploaded_file.read())
+            upload_file_to_docker(temp_file, f"{upload_path}/{uploaded_file.name}")
+            os.remove(temp_file)
         else:
             st.write("The upload path not exist.")
-    # st.download_button(
-    #     label="下载示例文件",
-    #     data="这是示例文件的内容。",
-    #     file_name="example.txt",
-    #     mime="text/plain"
-    #  )
 
 
 if __name__ == "__main__":
