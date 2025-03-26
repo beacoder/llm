@@ -151,3 +151,14 @@ def upload_file_to_docker(from_path: str, to_path: str):
         print(f"File {from_path} successfully uploaded to {user_id}")
     else:
         print (f"Failed to upload file: {result.stderr}")
+
+def download_file_from_docker(from_path: str, to_path: str):
+    user_id = get_user_id()
+    get_or_create_sandbox(user_id)
+    sandbox_name = f"sandbox_{user_id}"
+    from_path = f"{sandbox_name}:{from_path}"
+    result = subprocess.run(["docker", "cp", from_path, to_path], capture_output=True, text=True)
+    if result.returncode == 0:
+        print(f"File {from_path} successfully downloaded for {user_id}")
+    else:
+        print(f"Failed to download file: {result.stderr}")
