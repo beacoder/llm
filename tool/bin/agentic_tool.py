@@ -1,6 +1,5 @@
 from langchain.prompts import ChatPromptTemplate
 from langchain_core.messages import BaseMessage
-from langchain_core.tools import tool
 from langchain_ollama import ChatOllama
 from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import create_react_agent
