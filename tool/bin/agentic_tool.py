@@ -130,7 +130,7 @@ def main():
                 try:
                     with open(temp_file, 'w') as file:
                         file.write(uploaded_file.read().decode("utf-8"))
-!!              except Exception as e:
+                except Exception as e:
                     with open(temp_file, 'wb') as file:
                         file.write(uploaded_file.read())
                 upload_file_to_docker(temp_file, f"{upload_path}/{uploaded_file.name}")
