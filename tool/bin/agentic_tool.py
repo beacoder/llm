@@ -114,9 +114,11 @@ def main():
     # UI
     st.title("Agentic Tool")
     user_input = st.text_area("Please input your task:", value=st.session_state.current_text, key="text_area")
-    user_submit = st.button("Submit")
-    upload_path = st.text_input("Please input upload path:")
+    user_submit = st.button("Submit", key="input submit")
+    upload_path = st.text_input("Please input upload path:", value="/")
     uploaded_file = st.file_uploader("Upload files")
+    download_file = st.text_input("Please input download file full path:")
+    download_submit = st.button("Submit", key="download submit")
 
     # Logic
     if user_submit and user_input:
