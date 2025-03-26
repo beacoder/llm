@@ -95,9 +95,33 @@ def save_to_state(user_input: str):
     if user_input and user_input not in st.session_state.history:
         st.session_state.history.append(user_input)
 
+def do_upload(upload_path, uploaded_file):
+    user_id = get_user_id()
+    temp_file = os.path.expanduser(f"~/{user_id}_{uploaded_file.name}")
+    with open(temp_file, 'wb') as ul_file:
+        ul_file.write(uploaded_file.read())
+    upload_file_to_docker(temp_file, f"{upload_path}/{uploaded_file.name}")
+    os.remove(temp_file)
+
+def do_download(download_file):
+    file_name = "".join(os.path.splitext(os.path.basename(download_file)))
+    user_id = get_user_id()
+    temp_file = os.path.expanduser(f"~/{user_id}_{file_name}")
+    download_file_from_docker(download_file, temp_file)
+    download_data = None
+    with open(temp_file, 'rb') as dl_file:
+        download_data = dl_file.read()
+    os.remove(temp_file)
+    if download_data:
+        st.download_button(
+            label="Download File",
+            data=download_data,
+            file_name=f"{file_name}",  # Use the provided extension
+            mime="application/octet-stream"  # Generic MIME type for binary files
+        )
+
 # entry point
-def run_agent(user_input: str):
-    tools = init_tools(False)
+def run_agent(user_input: str, tools):
     agent = create_react_agent(llm, tools, state_modifier=format_for_model)
     inputs = {"messages": [("user", task_prompt + user_input)]}
     for s in agent.stream(inputs, stream_mode="values", config={"recursion_limit": RECURSION_LIMIT}):
@@ -106,61 +130,42 @@ def run_agent(user_input: str):
             print(message)
         else:
             message.pretty_print()
+    save_to_state(user_input)
 
 def main():
     redirect_output_to_streamlit()
     init_session_state()
 
+    use_local_tool = False
+
     # UI
     st.title("Agentic Tool")
     user_input = st.text_area("Please input your task:", value=st.session_state.current_text, key="text_area")
     user_submit = st.button("Submit", key="input submit")
-    upload_path = st.text_input("Please input upload path:", value="/")
-    uploaded_file = st.file_uploader("Upload files")
-    download_file = st.text_input("Please input download file full path:")
-    download_submit = st.button("Submit", key="download submit")
 
-    # Logic
-    if user_submit and user_input:
-        run_agent(user_input)
-        save_to_state(user_input)
-    elif download_submit and download_file:
-        if check_file_existence(download_file):
-            file_name, file_extension = os.path.splitext(os.path.basename(download_file))
-            user_id = get_user_id()
-            temp_file = os.path.expanduser(f"~/{user_id}_{file_name}")
-            download_file_from_docker(download_file, temp_file)
-            download_data = None
-            try:
-                with open(temp_file, 'r') as file:
-                    download_data = file.read().decode("utf-8")
-            except Exception as e:
-                with open(temp_file, 'rb') as file:
-                    download_data = file.read()
-            os.remove(temp_file)
-            if download_data:
-                st.download_button(
-                    label="Download File",
-                    data=download_data,
-                    file_name=f"{file_name}",  # Use the provided extension
-                    mime="application/octet-stream"  # Generic MIME type for binary files
-                )
-        else:
-            st.write("The download file not exist.")
-    elif upload_path and uploaded_file:
-        if check_path_existence(upload_path):
-            user_id = get_user_id()
-            temp_file = os.path.expanduser(f"~/{user_id}_{uploaded_file.name}")
-            try:
-                with open(temp_file, 'w') as file:
-                    file.write(uploaded_file.read().decode("utf-8"))
-            except Exception as e:
-                with open(temp_file, 'wb') as file:
-                    file.write(uploaded_file.read())
-            upload_file_to_docker(temp_file, f"{upload_path}/{uploaded_file.name}")
-            os.remove(temp_file)
-        else:
-            st.write("The upload path not exist.")
+    if use_local_tool:
+        # Logic
+        if user_submit and user_input:
+            run_agent(user_input, init_tools(use_local_tool))
+    else:
+        # UI
+        upload_path = st.text_input("Please input upload path:", value="/")
+        uploaded_file = st.file_uploader("Upload files")
+        download_file = st.text_input("Please input download file full path:")
+        download_submit = st.button("Submit", key="download submit")
+        # Logic
+        if user_submit and user_input:
+            run_agent(user_input, init_tools(use_local_tool))
+        elif download_submit and download_file:
+            if check_file_existence(download_file):
+                do_download(download_file)
+            else:
+                st.write("The download file not exist.")
+        elif upload_path and uploaded_file:
+            if check_path_existence(upload_path):
+                do_upload(upload_path, uploaded_file)
+            else:
+                st.write("The upload path not exist.")
 
 
 if __name__ == "__main__":
