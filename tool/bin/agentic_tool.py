@@ -116,8 +116,8 @@ def do_download(download_file):
         st.download_button(
             label="Download File",
             data=download_data,
-            file_name=f"{file_name}",  # Use the provided extension
-            mime="application/octet-stream"  # Generic MIME type for binary files
+            file_name=f"{file_name}",
+            mime="application/octet-stream"
         )
 
 # entry point
