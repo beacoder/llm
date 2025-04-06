@@ -60,6 +60,7 @@ def init_session_state():
             st.rerun()
     if st.sidebar.button("Clear History"):
         st.session_state.history = []
+        st.session_state.messages = []
         st.rerun()
 
 def save_to_state(user_input: str):
