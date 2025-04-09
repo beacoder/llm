@@ -1,7 +1,11 @@
-# Unsloth configuration
-from unsloth import FastLanguageModel
+from unsloth import FastLanguageModel, is_bfloat16_supported
+from datasets import load_dataset
+from transformers import TrainingArguments
+from trl import SFTTrainer
 import torch
 
+
+#1 Unsloth configuration
 max_seq_length = 2048 # Choose any! We auto support RoPE Scaling internally!
 dtype = None # None for auto detection. Float16 for Tesla T4, V100, Bfloat16 for Ampere+
 load_in_4bit = True # Use 4bit quantization to reduce memory usage. Can be False.
@@ -34,7 +38,7 @@ model = FastLanguageModel.get_peft_model(
     loftq_config = None, # And LoftQ
 )
 
-# Data Prep
+#2 Data Prep
 alpaca_prompt = """Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
 
 ### Instruction:
@@ -59,19 +63,14 @@ def formatting_prompts_func(examples):
     return { "text" : texts, }
 pass
 
-# Train the model
-from datasets import load_dataset
-dataset = load_dataset("yahma/alpaca-cleaned", split = "train")
-dataset = dataset.map(formatting_prompts_func, batched = True,)
+dataset = load_dataset('csv', data_files='chat_dataset.csv')
+dataset = dataset.map(formatting_prompts_func, batched = True)
 
-from trl import SFTTrainer
-from transformers import TrainingArguments
-from unsloth import is_bfloat16_supported
-
+#3 Train the model
 trainer = SFTTrainer(
     model = model,
     tokenizer = tokenizer,
-    train_dataset = dataset,
+    train_dataset = dataset["train"],
     dataset_text_field = "text",
     max_seq_length = max_seq_length,
     dataset_num_proc = 2,
@@ -106,5 +105,5 @@ print(f"{start_gpu_memory} GB of memory reserved.")
 trainer_stats = trainer.train()
 
 # save model
-model.save_pretrained("qwen2.5-3B-finetuned")
-tokenizer.save_pretrained("qwen2.5-3B-finetuned")
+model.save_pretrained("qwen2.5-3B-chat")
+tokenizer.save_pretrained("qwen2.5-3B-chat")
