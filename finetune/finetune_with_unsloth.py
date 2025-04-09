@@ -5,24 +5,26 @@ from trl import SFTTrainer
 import torch
 
 
-#1 Unsloth configuration
+# Configuration
 max_seq_length = 2048 # Choose any! We auto support RoPE Scaling internally!
 dtype = None # None for auto detection. Float16 for Tesla T4, V100, Bfloat16 for Ampere+
 load_in_4bit = True # Use 4bit quantization to reduce memory usage. Can be False.
 
-# note: model files are stored in "~/.cache/huggingface/hub"
+# Model files are cached in "~/.cache/huggingface/hub"
+# Initialize model and tokenizer
 model, tokenizer = FastLanguageModel.from_pretrained(
     # Can select any from the below:
     # "unsloth/Qwen2.5-0.5B", "unsloth/Qwen2.5-1.5B", "unsloth/Qwen2.5-3B"
     # "unsloth/Qwen2.5-14B",  "unsloth/Qwen2.5-32B",  "unsloth/Qwen2.5-72B",
     # And also all Instruct versions and Math. Coding verisons!
-    model_name = "unsloth/Qwen2.5-3B-Instruct", # about 3G VRAM
+    model_name = "unsloth/Qwen2.5-3B-Instruct",  # ~3GB VRAM
     max_seq_length = max_seq_length,
     dtype = dtype,
     load_in_4bit = load_in_4bit,
     # token = "hf_...", # use one if using gated models like meta-llama/Llama-2-7b-hf
 )
 
+# Apply PEFT (LoRA) to the model
 model = FastLanguageModel.get_peft_model(
     model,
     r = 16, # Choose any number > 0 ! Suggested 8, 16, 32, 64, 128
@@ -38,7 +40,7 @@ model = FastLanguageModel.get_peft_model(
     loftq_config = None, # And LoftQ
 )
 
-#2 Data Prep
+# Data Preparation
 alpaca_prompt = """Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
 
 ### Instruction:
@@ -63,10 +65,13 @@ def formatting_prompts_func(examples):
     return { "text" : texts, }
 pass
 
+
+# Load and format dataset
 dataset = load_dataset('csv', data_files='chat_dataset.csv')
 dataset = dataset.map(formatting_prompts_func, batched = True)
 
-#3 Train the model
+# Training
+# Initialize trainer
 trainer = SFTTrainer(
     model = model,
     tokenizer = tokenizer,
@@ -94,16 +99,16 @@ trainer = SFTTrainer(
     ),
 )
 
-# @title Show current memory stats
+# Memory stats
 gpu_stats = torch.cuda.get_device_properties(0)
 start_gpu_memory = round(torch.cuda.max_memory_reserved() / 1024 / 1024 / 1024, 3)
 max_memory = round(gpu_stats.total_memory / 1024 / 1024 / 1024, 3)
 print(f"GPU = {gpu_stats.name}. Max memory = {max_memory} GB.")
 print(f"{start_gpu_memory} GB of memory reserved.")
 
-# start training
+# Train the model
 trainer_stats = trainer.train()
 
-# save model
+# Save the model
 model.save_pretrained("qwen2.5-3B-chat")
 tokenizer.save_pretrained("qwen2.5-3B-chat")
