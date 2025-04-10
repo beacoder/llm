@@ -67,7 +67,7 @@ def formatting_prompts_func(examples):  # Formats prompts for training
 
 
 # Load and preprocess dataset
-dataset = load_dataset("csv", data_files="chat_dataset.csv")
+dataset = load_dataset("csv", data_files="chat_dataset.csv", split="train")
 dataset = dataset.map(formatting_prompts_func, batched=True)
 
 # Training setup
@@ -75,7 +75,7 @@ dataset = dataset.map(formatting_prompts_func, batched=True)
 trainer = SFTTrainer(
     model = model,
     tokenizer = tokenizer,
-    train_dataset = dataset["train"],
+    train_dataset = dataset,
     dataset_text_field = "text",
     max_seq_length = max_seq_length,
     dataset_num_proc = 2,
