@@ -1,19 +1,24 @@
+import logging
+from typing import Tuple
+
 from unsloth import FastLanguageModel
 from transformers import TextStreamer
-from typing import Tuple
-import logging
 
 
 # Configuration for Unsloth model
-MAX_SEQ_LENGTH = 2048 # Choose any! We auto support RoPE Scaling internally!
-DTYPE = None # None for auto detection. Float16 for Tesla T4, V100, Bfloat16 for Ampere+
-LOAD_IN_4BIT = True # Use 4bit quantization to reduce memory usage. Can be False. # Choose any! We auto support RoPE Scaling internally!
+MAX_SEQ_LENGTH = 2048  # Auto supports RoPE Scaling
+DTYPE = None  # Auto-detects dtype (Float16 for Tesla T4/V100, Bfloat16 for Ampere+)
+LOAD_IN_4BIT = True  # Reduces memory usage with 4bit quantization
 
 def load_model_and_tokenizer(model_name: str) -> Tuple[FastLanguageModel, any]:
     """
     Load the model and tokenizer.
-    :param model_name: Name of the pre-trained model.
-    :return: Tuple of model and tokenizer.
+
+    Args:
+        model_name: Name of the pre-trained model.
+
+    Returns:
+        Tuple of model and tokenizer.
     """
     model, tokenizer = FastLanguageModel.from_pretrained(
         model_name = model_name, # YOUR MODEL YOU USED FOR TRAINING
@@ -27,7 +32,7 @@ def load_model_and_tokenizer(model_name: str) -> Tuple[FastLanguageModel, any]:
 # Initialize model and tokenizer
 model, tokenizer = load_model_and_tokenizer("qwen2.5-3B-chat")
 
-# Inference setup
+# Inference prompt template
 ALPACA_PROMPT = """Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
 
 ### Instruction:
@@ -52,11 +57,13 @@ def run_inference() -> None:
         inputs = tokenizer(
             [
                 ALPACA_PROMPT.format(
-                    f"{user_input}",  # instruction
+                    user_input,  # instruction
                     "",  # input
-                    "",  # output - leave this blank for generation!
+                    "",  # output (leave blank for generation)
                 )
-            ], return_tensors="pt").to("cuda")
+            ],
+            return_tensors="pt"
+        ).to("cuda")
 
         text_streamer = TextStreamer(tokenizer)
         logging.info("Generating response...")
