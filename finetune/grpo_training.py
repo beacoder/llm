@@ -120,6 +120,7 @@ class TrainerSetup:
 
     def _setup_training_args(self):
         return GRPOConfig(
+            # use_vllm = True, # use vLLM for fast inference!
             learning_rate=5e-6,
             adam_beta1=0.9,
             adam_beta2=0.99,
