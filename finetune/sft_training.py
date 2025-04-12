@@ -65,6 +65,7 @@ def formatting_prompts_func(examples):  # Formats prompts for training
     return { "text": texts }
 
 # Load and preprocess dataset
+# dataset = load_dataset("yahma/alpaca-cleaned", split = "train")
 dataset = load_dataset("csv", data_files="chat_dataset.csv", split="train")
 dataset = dataset.map(formatting_prompts_func, batched=True)
 
