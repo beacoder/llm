@@ -64,8 +64,6 @@ def formatting_prompts_func(examples):  # Formats prompts for training
         texts.append(text)
     return { "text": texts }
 
-
-
 # Load and preprocess dataset
 dataset = load_dataset("csv", data_files="chat_dataset.csv", split="train")
 dataset = dataset.map(formatting_prompts_func, batched=True)
@@ -94,7 +92,7 @@ trainer = SFTTrainer(
         weight_decay = 0.01,
         lr_scheduler_type = "linear",
         seed = 3407,
-        output_dir = "outputs",
+        output_dir = "qwen2.5-3B-chat",
         report_to = "none", # Use this for WandB etc
     ),
 )
