@@ -6,27 +6,27 @@ import re, torch
 
 
 # Configuration settings
-max_seq_length = 1024  # Can increase for longer reasoning traces
-lora_rank = 64 # Larger rank = smarter, but slower
+MAX_SEQ_LENGTH = 1024  # Can increase for longer reasoning traces
+LORA_RANK = 64 # Larger rank = smarter, but slower
 
 # Model files are cached in ~/.cache/huggingface/hub
 # Initialize model and tokenizer with pretrained weights
 model, tokenizer = FastLanguageModel.from_pretrained(
     model_name = "unsloth/Qwen2.5-3B-Instruct",  # Requires ~3GB VRAM
-    max_seq_length = max_seq_length,
+    max_seq_length = MAX_SEQ_LENGTH,
     load_in_4bit = True,
     # fast_inference = True, # Enable vLLM fast inference
-    max_lora_rank = lora_rank,
+    max_lora_rank = LORA_RANK,
     gpu_memory_utilization = 0.5, # Reduce if out of memory
 )
 
 # Apply PEFT (LoRA) for efficient fine-tuning
 model = FastLanguageModel.get_peft_model(
     model,
-    r = lora_rank,
+    r = LORA_RANK,
     target_modules = ["q_proj", "k_proj", "v_proj", "o_proj",
                       "gate_proj", "up_proj", "down_proj"],
-    lora_alpha = lora_rank,
+    lora_alpha = LORA_RANK,
     use_gradient_checkpointing = "unsloth", # Enable long context finetuning
     random_state = 3407,
 )
@@ -39,15 +39,6 @@ Respond in the following format:
 </reasoning>
 <answer>
 ...
-</answer>
-"""
-
-XML_COT_FORMAT = """\
-<reasoning>
-{reasoning}
-</reasoning>
-<answer>
-{answer}
 </answer>
 """
 
