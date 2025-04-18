@@ -94,9 +94,6 @@ max_memory = round(gpu_stats.total_memory / 1024 / 1024 / 1024, 3)
 print(f"GPU: {gpu_stats.name}. Max memory: {max_memory} GB")
 print(f"Reserved memory: {start_gpu_memory} GB")
 
-import pdb
-pdb.set_trace()
-
 # only train on the assistant outputs and ignore the loss on the user's inputs.
 trainer = train_on_responses_only(
     trainer,
