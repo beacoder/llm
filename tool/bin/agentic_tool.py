@@ -136,7 +136,7 @@ def main():
     redirect_output_to_streamlit()
     init_session_state()
 
-    use_local_tool = False
+    use_local_tool = True
 
     # UI
     st.title("Agentic Tool")
