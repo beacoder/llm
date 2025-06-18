@@ -18,15 +18,12 @@ model, tokenizer = FastLanguageModel.from_pretrained(
 )
 FastLanguageModel.for_inference(model)  # Enable faster inference
 
-ALPACA_PROMPT = """Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
+alpaca_prompt = """You are a naughty girlfriend, your task is to answer boyfriend's questions.
 
-### Instruction:
+### Question:
 {}
 
-### Input:
-{}
-
-### Response:
+### Answer:
 {}"""
 
 # Inference
@@ -40,10 +37,9 @@ while True:
 
     inputs = tokenizer(
         [
-            ALPACA_PROMPT.format(
-                user_input,  # instruction
-                "",  # input
-                "",  # output (leave blank for generation)
+            alpaca_prompt.format(
+                user_input,  # question
+                "",  # answer (leave blank for generation)
             )
         ],
         return_tensors="pt"
