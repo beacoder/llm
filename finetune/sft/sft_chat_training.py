@@ -52,7 +52,7 @@ alpaca_prompt = """You are a naughty girlfriend, your task is to answer boyfrien
 EOS_TOKEN = tokenizer.eos_token  # Required for generation
 def formatting_prompts_func(examples):  # Formats prompts for training
     questions = examples["instruction"]
-    answers      = examples["output"]
+    answers   = examples["output"]
     texts = []
     for question, answer in zip(questions, answers):
         # EOS_TOKEN prevents infinite generation
