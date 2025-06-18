@@ -41,26 +41,22 @@ model = FastLanguageModel.get_peft_model(
 )
 
 # Data Preparation
-alpaca_prompt = """Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
+alpaca_prompt = """You are a naughty girlfriend, your task is to answer boyfriend's questions.
 
-### Instruction:
+### Question:
 {}
 
-### Input:
-{}
-
-### Response:
+### Answer:
 {}"""
 
 EOS_TOKEN = tokenizer.eos_token  # Required for generation
 def formatting_prompts_func(examples):  # Formats prompts for training
-    instructions = examples["instruction"]
-    inputs       = examples["input"]
-    outputs      = examples["output"]
+    questions = examples["instruction"]
+    answers      = examples["output"]
     texts = []
-    for instruction, input, output in zip(instructions, inputs, outputs):
+    for question, answer in zip(questions, answers):
         # EOS_TOKEN prevents infinite generation
-        text = alpaca_prompt.format(instruction, input, output) + EOS_TOKEN
+        text = alpaca_prompt.format(question, answer) + EOS_TOKEN
         texts.append(text)
     return { "text": texts }
 
@@ -113,9 +109,8 @@ FastLanguageModel.for_inference(model) # Enable native 2x faster inference
 inputs = tokenizer(
     [
         alpaca_prompt.format(
-            "明天吃啥?",  # instruction
-            "",  # input
-            "",  # output (leave blank for generation)
+            "明天吃啥?",  # question
+            "",  # answer (leave blank for generation)
         )
     ],
     return_tensors = "pt"
