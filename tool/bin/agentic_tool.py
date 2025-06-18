@@ -41,8 +41,7 @@ Follow these instructions precisely:\n
 2.Select the appropriate tool: Choose the most suitable tool from the provided list to accomplish the task.\n
 3.Execute the task: Use the selected tool to perform the task step-by-step.\n
 4.Verify the output: Check if the result meets the task's requirements. If not, retry or adjust your approach.\n
-5.Proceed to the next task: Only move to the next task after successfully completing the current one.\n\n
-Tasks:\n
+5.Proceed to the next task: Only move to the next task after successfully completing the current one.
 """
 
 prompt = ChatPromptTemplate.from_messages(
@@ -123,7 +122,7 @@ def do_download(download_file):
 # entry point
 def run_agent(user_input: str, tools):
     agent = create_react_agent(llm, tools, state_modifier=format_for_model)
-    inputs = {"messages": [("user", task_prompt + user_input)]}
+    inputs = {"messages": [("system", task_prompt), ("user", user_input)]}
     for s in agent.stream(inputs, stream_mode="values", config={"recursion_limit": RECURSION_LIMIT}):
         message = s["messages"][-1]
         if isinstance(message, tuple):
