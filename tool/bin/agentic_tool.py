@@ -46,7 +46,7 @@ Follow these instructions precisely:\n
 
 prompt = ChatPromptTemplate.from_messages(
     [
-        ("system", "You are a large language model and a helpful assistant. Respond concisely."),
+        ("system", task_prompt),
         ("placeholder", "{messages}"),
     ]
 )
@@ -122,7 +122,7 @@ def do_download(download_file):
 # entry point
 def run_agent(user_input: str, tools):
     agent = create_react_agent(llm, tools, state_modifier=format_for_model)
-    inputs = {"messages": [("system", task_prompt), ("user", user_input)]}
+    inputs = {"messages": [("user", user_input)]}
     for s in agent.stream(inputs, stream_mode="values", config={"recursion_limit": RECURSION_LIMIT}):
         message = s["messages"][-1]
         if isinstance(message, tuple):
