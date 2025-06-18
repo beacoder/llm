@@ -1,6 +1,6 @@
 from unsloth import FastLanguageModel, is_bfloat16_supported
 from datasets import load_dataset
-from transformers import TrainingArguments
+from transformers import TrainingArguments, TextStreamer
 from trl import SFTTrainer
 import torch
 
@@ -66,7 +66,7 @@ def formatting_prompts_func(examples):  # Formats prompts for training
 
 # Load and preprocess dataset
 # dataset = load_dataset("yahma/alpaca-cleaned", split = "train")
-dataset = load_dataset("csv", data_files="chat_dataset.csv", split="train")
+dataset = load_dataset("csv", data_files="/home/huming/workspace/ai/finetune/sft/chat_dataset.csv", split="train")
 dataset = dataset.map(formatting_prompts_func, batched=True)
 
 # Training setup
@@ -83,7 +83,7 @@ trainer = SFTTrainer(
         per_device_train_batch_size = 2,
         gradient_accumulation_steps = 4,
         warmup_steps = 5,
-        num_train_epochs=5,  # Uncomment for full training
+        num_train_epochs=5,
         # max_steps = 60,
         learning_rate = 2e-4,
         fp16 = not is_bfloat16_supported(),
@@ -108,6 +108,22 @@ print(f"Reserved memory: {start_gpu_memory} GB")
 # Start model training
 trainer_stats = trainer.train()
 
-# Save the trained model
+# Inference
+FastLanguageModel.for_inference(model) # Enable native 2x faster inference
+inputs = tokenizer(
+    [
+        alpaca_prompt.format(
+            "明天吃啥?",  # instruction
+            "",  # input
+            "",  # output (leave blank for generation)
+        )
+    ],
+    return_tensors = "pt"
+).to("cuda")
+
+text_streamer = TextStreamer(tokenizer)
+_ = model.generate(**inputs, streamer = text_streamer, max_new_tokens = 128)
+
+# Save LoRA adapters
 model.save_pretrained("qwen2.5-3B-chat")
 tokenizer.save_pretrained("qwen2.5-3B-chat")
