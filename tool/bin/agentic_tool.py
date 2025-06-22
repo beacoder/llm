@@ -1,10 +1,6 @@
-from langchain.prompts import ChatPromptTemplate
-from langchain_core.messages import BaseMessage
 from langchain_ollama import ChatOllama
 from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import create_react_agent
-from typing import List
-from typing_extensions import TypedDict
 import os
 import streamlit as st
 import sys
@@ -27,7 +23,7 @@ from docker_tools import (get_user_id, check_path_existence, upload_file_to_dock
 # 6.The agent then returns the full list of messages as a dictionary containing the key "messages".
 
 # LLM settings
-llm = ChatOllama(model="qwen2.5", temperature=0.25)
+llm = ChatOllama(model="qwen3:8b", temperature=0.25)
 # llm = ChatOpenAI(api_key="",
 #                  model="deepseek-chat",
 #                  base_url='https://api.deepseek.com',
@@ -41,24 +37,11 @@ Follow these instructions precisely:\n
 2.Select the appropriate tool: Choose the most suitable tool from the provided list to accomplish the task.\n
 3.Execute the task: Use the selected tool to perform the task step-by-step.\n
 4.Verify the output: Check if the result meets the task's requirements. If not, retry or adjust your approach.\n
-5.Proceed to the next task: Only move to the next task after successfully completing the current one.
+5.Proceed to the next task: Only move to the next task after successfully completing the current one.\n
 """
-
-prompt = ChatPromptTemplate.from_messages(
-    [
-        ("system", task_prompt),
-        ("placeholder", "{messages}"),
-    ]
-)
 
 # increase recursion_limit to avoid agent stops prematurely
 RECURSION_LIMIT=1000
-
-class AgentState(TypedDict):
-    messages: List[BaseMessage]
-
-def format_for_model(state: AgentState):
-    return prompt.invoke({"messages": state["messages"]})
 
 def redirect_output_to_streamlit():
     class StdOutRedirector:
@@ -80,6 +63,8 @@ def init_session_state():
         st.session_state.history = []
     if 'current_text' not in st.session_state:
         st.session_state.current_text = "list current directory."
+    if 'messages' not in st.session_state:
+        st.session_state.messages = {"messages": []}
     # UI config
     st.sidebar.title("History")
     for idx, entry in enumerate(st.session_state.history):
@@ -88,11 +73,13 @@ def init_session_state():
             st.rerun()
     if st.sidebar.button("Clear History"):
         st.session_state.history = []
+        st.session_state.messages = {"messages": []}
         st.rerun()
 
-def save_to_state(user_input: str):
+def save_to_state(user_input: str, messages):
     if user_input and user_input not in st.session_state.history:
         st.session_state.history.append(user_input)
+    st.session_state.messages = {"messages": messages}
 
 def do_upload(upload_path, uploaded_file):
     user_id = get_user_id()
@@ -121,15 +108,16 @@ def do_download(download_file):
 
 # entry point
 def run_agent(user_input: str, tools):
-    agent = create_react_agent(llm, tools, state_modifier=format_for_model)
-    inputs = {"messages": [("user", user_input)]}
-    for s in agent.stream(inputs, stream_mode="values", config={"recursion_limit": RECURSION_LIMIT}):
+    # keep conversation history
+    st.session_state.messages["messages"].append(("user", user_input))
+    agent = create_react_agent(llm, tools, prompt=task_prompt)
+    for s in agent.stream(st.session_state.messages, stream_mode="values", config={"recursion_limit": RECURSION_LIMIT}):
+        save_to_state(user_input, s["messages"])
         message = s["messages"][-1]
         if isinstance(message, tuple):
             print(message)
         else:
             message.pretty_print()
-    save_to_state(user_input)
 
 def main():
     redirect_output_to_streamlit()
