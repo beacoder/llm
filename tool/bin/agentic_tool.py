@@ -23,11 +23,11 @@ from docker_tools import (get_user_id, check_path_existence, upload_file_to_dock
 # 6.The agent then returns the full list of messages as a dictionary containing the key "messages".
 
 # LLM settings
-llm = ChatOllama(model="qwen3:8b", temperature=0.25)
+llm = ChatOllama(model="qwen3:8b", temperature=1)
 # llm = ChatOpenAI(api_key="",
 #                  model="deepseek-chat",
 #                  base_url='https://api.deepseek.com',
-#                  temperature=0.25)
+#                  temperature=1)
 
 task_prompt = """
 You are an AI assistant equipped with a set of tools to complete tasks.\n
