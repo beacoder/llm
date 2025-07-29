@@ -1,5 +1,5 @@
 # Prepare dataset
-1. 85% as finetuen dataset.
+1. 85% as finetune dataset.
 2. 10% as test dataset.
 3. 5% as verification (inference) dataset.
 4. dataset should be at least 100+, 1000+ would be better.
