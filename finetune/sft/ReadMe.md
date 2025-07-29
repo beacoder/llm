@@ -1,9 +1,9 @@
-Prepare dataset
+# Prepare dataset
 
-85% as finetuen dataset.
-10% as test dataset.
-5% as verification (inference) dataset.
-dataset should be at least 100+, 1000+ would be better.
+1. 85% as finetuen dataset.
+2. 10% as test dataset.
+3. 5% as verification (inference) dataset.
+4. dataset should be at least 100+, 1000+ would be better.
 
 
 Train/Eval lost
