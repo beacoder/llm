@@ -71,6 +71,7 @@ trainer = SFTTrainer(
     model = model,
     tokenizer = tokenizer,
     train_dataset = dataset,
+    # eval_dataset = test_dataset, # for calculating eval_loss
     dataset_text_field = "text",
     max_seq_length = max_seq_length,
     dataset_num_proc = 2,
