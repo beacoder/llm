@@ -1,3 +1,5 @@
+# --- Train ChatML dataset with SFTTrainer, ray and deepspeed ---
+
 import json
 import os
 import argparse
