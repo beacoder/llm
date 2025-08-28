@@ -6,7 +6,7 @@ export RAY_TLS_CA_CERT="RAY_CA.pemfile"
 export RAY_JOB_HEADERS="{\"Authorization\":\"Bearer $TOKEN\"}"
 
 export RAY_JOB_RUNTIME_ENV='{
-"pip": "requirement3.txt",
+"pip": "requirement.txt",
 "env_vars": {
     "RAY_ENABLE_RECORD_ACTOR_TASK_LOGGING": "1",
     "RAY_COLOR_PREFIX": "0",
