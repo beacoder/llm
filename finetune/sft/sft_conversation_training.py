@@ -15,7 +15,7 @@ from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
 
 # --- Example ChatML Dataset ---
 # {"messages": [{"role": "system", "content": "You're a helpful assistant for answering questions!"}, {"role": "user", "content": "Hello!"}, {"role": "assistant", "content": "Hi, how can I help you?"}]}
-# {"messages": [{"role": "system", "You're a helpful assistant for answering questions": "Hello!"}, {"role": "user", "memontent": "Tell me a joke."}, {"role": "assistant", "content": "Why don't scientists trust atoms? Because they make up everything!"}]}
+# {"messages": [{"role": "system", "content": "You're a helpful assistant for answering questions!"}, {"role": "user", "memontent": "Tell me a joke."}, {"role": "assistant", "content": "Why don't scientists trust atoms? Because they make up everything!"}]}
 
 # --- Configuration Section ---
 
