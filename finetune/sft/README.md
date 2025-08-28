@@ -11,16 +11,9 @@
 4. train_loss will go down to a pointer where it can't go down any further. (train_loss line becomes flat)
 5. if train_loss line is not approaching flat, means further training needed, could be due to too small datasets.
 
-# Use HF.SFTTrainer when
+# Use SFTTrainer when
 1. You're doing instruction tuning or chat model fine-tuning.
 2. Your data is in conversational format (e.g., ChatML: <|im_start|>system\n...\n<|im_end|>).
 3. You want to fine-tune a model to follow instructions or respond in chats.
 4. You want automatic masking of loss so only the assistant's reply contributes to the loss.
 5. You're using datasets in these formats: ChatML, Alpaca, UltraChat.
-
-# Use HF.Trainer when
-1. You're doing standard causal language modeling (e.g., pre-training).
-2. You want full control over the training loop, data collation, or loss computation.
-3. Your dataset is not conversational (e.g., summarization, translation).
-4. You’re not using structured chat formats.
-5. You’re doing research and need to customize training behavior (e.g., custom loss, gradient manipulation).
