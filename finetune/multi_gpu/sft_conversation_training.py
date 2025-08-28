@@ -184,20 +184,11 @@ def main():
         ),
     )
 
+    CONFIG["output_dir"] = get_storage_path()
+
     trainer = TorchTrainer(
         train_func,
-        train_loop_config={
-            "output_dir": get_storage_path(),
-            "deepspeed_config": CONFIG["deepspeed_config"],
-            "model_name": CONFIG["model_name"],
-            "max_seq_length": CONFIG["max_seq_length"],
-            "response_template": CONFIG["response_template"],
-            "learning_rate": CONFIG["learning_rate"],
-            "num_train_epochs": CONFIG["num_train_epochs"],
-            "per_device_train_batch_size": CONFIG["per_device_train_batch_size"],
-            "gradient_accumulation_steps": CONFIG["gradient_accumulation_steps"],
-            "seed": CONFIG["seed"],
-        },
+        train_loop_config=CONFIG,
         scaling_config=ScalingConfig(
             num_workers=CONFIG["num_workers"],
             use_gpu=True,
