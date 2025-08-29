@@ -11,7 +11,7 @@ from ray.train import RunConfig, ScalingConfig, CheckpointConfig
 from ray.train.torch import TorchTrainer
 
 from datasets import load_dataset
-from transformers import AutoTokenizer, AutoModelForCausalLM, set_seed
+from transformers import AutoTokenizer, AutoModelForCausalLM, set_seed, TrainingArguments
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
 
 
