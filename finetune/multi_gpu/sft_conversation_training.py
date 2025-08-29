@@ -95,19 +95,23 @@ def load_and_tokenize_data(config: dict):
 
 def create_training_args(config: dict, local_rank: int, world_size: int):
     output_dir = config["output_dir"]
+    num_train_epochs = config["num_train_epochs"]
+    learning_rate = config["learning_rate"]
 
     # Calculate batch size
     per_device_train_batch_size = config["per_device_train_batch_size"]
     grad_acc_steps = config["gradient_accumulation_steps"]
     total_batch_size = per_device_train_batch_size * grad_acc_steps * world_size
 
+    print(f"Global batch size: {total_batch_size}, LR: {learning_rate}, Epochs: {num_train_epochs}")
+
     # Training arguments
     training_args = TrainingArguments(
         output_dir=output_dir,
         per_device_train_batch_size=per_device_train_batch_size,
         gradient_accumulation_steps=grad_acc_steps,
-        num_train_epochs=config["num_train_epochs"],
-        learning_rate=config["learning_rate"],
+        num_train_epochs=num_train_epochs,
+        learning_rate=learning_rate,
         logging_steps=10,
         save_steps=100,
         evaluation_strategy="no",
