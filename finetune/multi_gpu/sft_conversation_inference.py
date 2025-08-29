@@ -106,7 +106,7 @@ def do_inference(actor):
             chat_history = [conversations[0]]
             for msg in [x["content"] for x in conversations if x["role"] == "user"]:
                 chat_history.append({"role": "user", "content": msg})
-                chat_history.append({"role": "assistant", "content": inference(chat_history)})
+                chat_history.append({"role": "assistant", "content": inference(actor, chat_history)})
             print(SEPARATOR_LINE)
 
 
