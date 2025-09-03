@@ -32,6 +32,7 @@ def load_model(tokenizer, model_path, lora_path=None, lora_enabled=False):
         trust_remote_code=True,
         torch_dtype=torch.bfloat16,
         use_cache=False,
+        device_map="auto"
     )
     model.resize_token_embeddings(len(tokenizer))
 
