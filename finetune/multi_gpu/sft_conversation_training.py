@@ -13,6 +13,7 @@ from ray.train.torch import TorchTrainer
 from datasets import load_dataset
 from transformers import AutoTokenizer, AutoModelForCausalLM, set_seed, TrainingArguments
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
+from peft import LoraConfig, get_peft_model
 
 
 # --- Example ChatML Dataset ---
@@ -20,6 +21,7 @@ from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
 # {"messages": [{"role": "system", "content": "You're a helpful assistant for answering questions!"}, {"role": "user", "memontent": "Tell me a joke."}, {"role": "assistant", "content": "Why don't scientists trust atoms? Because they make up everything!"}]}
 
 # --- Configuration Section ---
+USE_LORA = False
 
 # Global config (can be loaded from a JSON or environment later)
 CONFIG = {
@@ -58,6 +60,25 @@ CONFIG = {
         "train_batch_size": "auto",
         "train_micro_batch_size_per_gpu": "auto",
         "wall_clock_breakdown": False
+    },
+    "lora_config": {
+            "r": 512,
+            "lora_alpha": 1024,
+            "lora_dropout": 0.1,
+            "target_modules": [
+                "q_proj",
+                "k_proj",
+                "v_proj",
+                "o_proj",
+                "gate_proj",
+                "up_proj",
+                "down_proj"
+            ],
+            "task_type": "CAUSAL_LM",
+            "modules_to_save": [],
+            "bias": "none",
+            "fan_in_fan_out": False,
+            "init_lora_weights": True
     }
 }
 
@@ -143,6 +164,10 @@ def train_func(config: dict):
         attn_implementation="flash_attention_2",
         device_map="auto"  # automatically places model on GPU if available
     )
+
+    if USE_LORA:
+        # Apply LoRA to model
+        model = get_peft_model(model, LoraConfig(**config["lora_config"]))
 
     tokenizer = AutoTokenizer.from_pretrained(config["model_name"])
     dataset, _ = load_and_tokenize_data(config)
