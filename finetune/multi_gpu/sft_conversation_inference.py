@@ -26,6 +26,10 @@ def save_tokenizer(tokenizer, path: Path):
     path.mkdir(exist_ok=True)
     tokenizer.save_pretrained(path)
 
+def save_merged_model(model, path: Path):
+    path.mkdir(exist_ok=True)
+    model.save_pretrained(output_path)
+
 def load_model(tokenizer, model_path, lora_path=None, lora_enabled=False):
     model = AutoModelForCausalLM.from_pretrained(
         model_path,
@@ -38,8 +42,10 @@ def load_model(tokenizer, model_path, lora_path=None, lora_enabled=False):
 
     if lora_enabled and lora_path:
         model = PeftModel.from_pretrained(model, lora_path).merge_and_unload()
+        save_merged_model(model, Path(OUTPUT_PATH))
 
-    model = model.eval().to(model.device)
+    # Common pattern for inference
+    model = model.eval().to(model.device)  # Set mode + ensure correct device
     return model
 
 def build_chat_input(messages):
@@ -81,7 +87,7 @@ class ModelActor:
         tokenized = self.tokenizer([inputs], return_tensors="pt", add_special_tokens=False)
         input_ids = tokenized["input_ids"].to(self.device)
 
-        with torch.no_grad():
+        with torch.no_grad():  # Disable gradient tracking
             outputs = self.model.generate(
                 input_ids=input_ids,
                 output_scores=True,
