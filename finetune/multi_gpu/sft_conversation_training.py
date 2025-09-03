@@ -141,6 +141,7 @@ def train_func(config: dict):
         torch_dtype=torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16,
         use_cache=False,
         attn_implementation="flash_attention_2",
+        device_map="auto"  # automatically places model on GPU if available
     )
 
     tokenizer = AutoTokenizer.from_pretrained(config["model_name"])
