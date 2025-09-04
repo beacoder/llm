@@ -135,7 +135,6 @@ def create_training_args(config: dict, local_rank: int, world_size: int):
         learning_rate=learning_rate,
         logging_steps=100,
         save_strategy="epoch",
-        save_steps=500,
         save_safetensors=True,
         # evaluation_strategy="no",
         report_to="none",
