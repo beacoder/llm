@@ -13,8 +13,8 @@ MODEL_PATH = "Qwen2.5-Coder-3B"
 CHECKPOINT_PATH = "./output/sft_result_checkpoints/TorchTrainer_2025-08-28_09-22-39/TorchTrainer_8ade7_00000_0_2025-08-28_09-22-39/checkpoint_000005/"
 VERIFICATION_PATH = "./verify_dataset.jsonl"
 
- # this is for saving private tokenizer
-OUTPUT_PATH = "./output/DummyTokenizer"
+ # this is for saving merged_model
+OUTPUT_PATH = "./output/merged_model"
 
 START_TOKEN = "assistant\n"
 STOP_TOKEN = "<tool_response>\n"
@@ -24,8 +24,8 @@ SEPARATOR_LINE = "==============================================================
 # --- Helper Functions ---
 def save_merged_model(tokenizer, model, path: Path):
     path.mkdir(exist_ok=True)
-    model.save_pretrained(output_path, safe_serialization=True)
-    model.config.save_pretrained(output_path)
+    model.save_pretrained(path, safe_serialization=True)
+    model.config.save_pretrained(path)
     tokenizer.save_pretrained(path)
 
 def load_model(tokenizer, model_path, lora_path=None, lora_enabled=False):
