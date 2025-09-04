@@ -133,8 +133,10 @@ def create_training_args(config: dict, local_rank: int, world_size: int):
         gradient_accumulation_steps=grad_acc_steps,
         num_train_epochs=num_train_epochs,
         learning_rate=learning_rate,
-        logging_steps=10,
-        save_steps=100,
+        logging_steps=100,
+        save_strategy="epoch",
+        save_steps=500,
+        save_safetensors=True,
         # evaluation_strategy="no",
         report_to="none",
         fp16=not torch.cuda.is_bf16_supported(),
@@ -194,6 +196,7 @@ def train_func(config: dict):
 
     # Save model only on one process
     if ctx.get_world_rank() == 0:
+        # Depending on USE_LORA, either adapter weights or full weights are saved.
         trainer.save_model(config["output_dir"])
         tokenizer.save_pretrained(config["output_dir"])
 
