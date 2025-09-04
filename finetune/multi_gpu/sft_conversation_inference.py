@@ -22,13 +22,11 @@ SYSTEM_PROMPT = "You're a helpful assistant for answering questions!"
 SEPARATOR_LINE = "===================================================================================================================================================================================="
 
 # --- Helper Functions ---
-def save_tokenizer(tokenizer, path: Path):
+def save_merged_model(tokenizer, model, path: Path):
     path.mkdir(exist_ok=True)
+    model.save_pretrained(output_path, safe_serialization=True)
+    model.config.save_pretrained(output_path)
     tokenizer.save_pretrained(path)
-
-def save_merged_model(model, path: Path):
-    path.mkdir(exist_ok=True)
-    model.save_pretrained(output_path)
 
 def load_model(tokenizer, model_path, lora_path=None, lora_enabled=False):
     model = AutoModelForCausalLM.from_pretrained(
@@ -42,7 +40,7 @@ def load_model(tokenizer, model_path, lora_path=None, lora_enabled=False):
 
     if lora_enabled and lora_path:
         model = PeftModel.from_pretrained(model, lora_path).merge_and_unload()
-        save_merged_model(model, Path(OUTPUT_PATH))
+        save_merged_model(tokenizer, model, Path(OUTPUT_PATH))
 
     # Common pattern for inference
     model = model.eval().to(model.device)  # Set mode + ensure correct device
@@ -72,7 +70,6 @@ def extract_last_ai_response(output_list):
 class ModelActor:
     def __init__(self):
         tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH, legacy=True)
-        save_tokenizer(tokenizer, Path(OUTPUT_PATH))
 
         if tokenizer.pad_token is None:
             tokenizer.pad_token = tokenizer.eos_token
