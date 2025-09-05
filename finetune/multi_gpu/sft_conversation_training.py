@@ -237,7 +237,7 @@ def main():
     # Initialize Ray
     ray.init(log_to_driver=True)
 
-    datasets, dataset_config = get_datasets(config["train_path"], config["validation_path"])
+    datasets, dataset_config = get_datasets(CONFIG["train_path"], CONFIG["validation_path"])
     CONFIG["output_dir"] = get_storage_path()
     CONFIG["steps_per_epoch"] = (datasets["train"].count()) // (CONFIG["batch_size"] * CONFIG["num_workers"])
 
