@@ -200,7 +200,7 @@ def train_func(config: dict):
     custom_collate_func = functools.partial(
         collate_func,
         tokenizer=tokenizer,
-        block_size=Config["block_size"],
+        block_size=config["block_size"],
         device="cuda" if torch.cuda.is_available() else "cpu",
     )
 
