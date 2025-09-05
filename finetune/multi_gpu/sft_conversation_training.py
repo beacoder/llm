@@ -1,19 +1,29 @@
-# --- Train ChatML dataset with SFTTrainer, ray and deepspeed ---
+# Fine-Tuning with Ray Train and DeepSpeed
+# @see https://docs.ray.io/en/latest/train/examples/deepspeed/gptj_deepspeed_fine_tuning.html
 
-import json
+import functools
 import os
-import argparse
+import re
 import torch
 
 import ray
 from ray import train
 from ray.train import RunConfig, ScalingConfig, CheckpointConfig
+from ray.train.huggingface.transformers import prepare_trainer, RayTrainReportCallback
 from ray.train.torch import TorchTrainer
 
-from datasets import load_dataset
-from transformers import AutoTokenizer, AutoModelForCausalLM, set_seed, TrainingArguments
-from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
+import deepspeed
 from peft import LoraConfig, get_peft_model
+# import evaluate
+from transformers.utils.logging import disable_progress_bar, enable_progress_bar
+from transformers import (
+    Trainer,
+    TrainingArguments,
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    default_data_collator,
+    set_seed
+)
 
 
 # --- Example ChatML Dataset ---
@@ -21,6 +31,7 @@ from peft import LoraConfig, get_peft_model
 # {"messages": [{"role": "system", "content": "You're a helpful assistant for answering questions!"}, {"role": "user", "memontent": "Tell me a joke."}, {"role": "assistant", "content": "Why don't scientists trust atoms? Because they make up everything!"}]}
 
 # --- Configuration Section ---
+
 USE_LORA = False
 
 # Global config (can be loaded from a JSON or environment later)
@@ -31,14 +42,12 @@ CONFIG = {
     "batch_size": 1,
     "num_checkpoints_to_keep": 6,
     "train_path": "train_dataset.jsonl",
-    "test_path": "test_dataset.jsonl",
+    "validation_path": "test_dataset.jsonl",
     "response_template": "<|im_start|>assistant",
     "max_seq_length": 16000,
     "seed": 42,
     "learning_rate": 1e-5,
     "num_train_epochs": 6,
-    "per_device_train_batch_size": 1,
-    "gradient_accumulation_steps": 8,
     "deepspeed_config": {
         "fp16": {"enabled": "auto"},
         "bf16": {"enabled": "auto"},
@@ -87,118 +96,140 @@ CONFIG = {
 def get_storage_path() -> str:
     return f"./output/sft_result_checkpoints"
 
-def load_and_tokenize_data(config: dict):
-    dataset = load_dataset("json", data_files=config["train_path"], split="train")
-    tokenizer = AutoTokenizer.from_pretrained(config["model_name"], use_fast=True)
+def get_datasets(train_path, validation_path):
+    train_ds = ray.data.read_json(train_path)
+    eval_ds = ray.data.read_json(validation_path)
+    datasets = {
+        "train": train_ds,
+        "validation": eval_ds
+    }
+    config = ray.train.DataConfig(
+        datasets_to_split=["train", "validation"])
+    return datasets, config
 
-    if tokenizer.pad_token is None:
-        tokenizer.pad_token = tokenizer.eos_token
-        tokenizer.padding_side = "right"
-        tokenizer.pad_token_id = tokenizer.eos_token_id
+def collate_func(batch, tokenizer, block_size, device):
+    batch_list = tokenizer.apply_chat_template(
+            [y for x in batch["messages"] for y in x],
+            chat_template = QWEN2_32B_TEMPLTE,
+            tokenize=False)
 
-    def format_chatml_prompt(example):
-        return {
-            "text": tokenizer.apply_chat_template(
-                example["messages"],
-                tokenize=False,
-                add_generation_prompt=False
-            )
-        }
+    if isinstance(block_size, int) and block_size > tokenizer.model_max_length:
+        max_length = tokenizer.model_max_length
+    else:
+        max_length = block_size
 
-    dataset = dataset.map(format_chatml_prompt, remove_columns=dataset.column_names)
-
-    def tokenize_function(examples):
-        return tokenizer(examples["text"], truncation=True, max_length=tokenizer.model_max_length, padding=False)
-
-    dataset = dataset.map(tokenize_function, batched=True, remove_columns=["text"])
-    print(f"Peek dataset: {dataset[0]}")
-    return dataset, tokenizer
-
-def create_training_args(config: dict, local_rank: int, world_size: int):
-    output_dir = config["output_dir"]
-    num_train_epochs = config["num_train_epochs"]
-    learning_rate = config["learning_rate"]
-
-    # Calculate batch size
-    per_device_train_batch_size = config["per_device_train_batch_size"]
-    grad_acc_steps = config["gradient_accumulation_steps"]
-    total_batch_size = per_device_train_batch_size * grad_acc_steps * world_size
-
-    print(f"Global batch size: {total_batch_size}, LR: {learning_rate}, Epochs: {num_train_epochs}")
-
-    # Training arguments
-    training_args = TrainingArguments(
-        output_dir=output_dir,
-        per_device_train_batch_size=per_device_train_batch_size,
-        gradient_accumulation_steps=grad_acc_steps,
-        num_train_epochs=num_train_epochs,
-        learning_rate=learning_rate,
-        logging_steps=100,
-        save_strategy="epoch",
-        save_safetensors=True,
-        # evaluation_strategy="no",
-        report_to="none",
-        fp16=not torch.cuda.is_bf16_supported(),
-        bf16=torch.cuda.is_bf16_supported(),
-        ddp_find_unused_parameters=False,
-        local_rank=local_rank,
-        deepspeed=config["deepspeed_config"],
+    out_batch = tokenizer(
+        batch_list,
+        padding=True,
+        max_length=max_length,
+        truncation='longest_first',
+        add_special_tokens=True,
+        return_tensors="pt",
     )
 
-    return training_args
+    out_batch["labels"] = out_batch["input_ids"].clone()
+    out_batch = tree.map_structure(lambda x: x.to(device), out_batch)
+    return out_batch
 
 # --- Training Function ---
 
 def train_func(config: dict):
+    # Use the actual number of CPUs assigned by Ray
+    # os.environ["OMP_NUM_THREADS"] = str(
+    #     train.get_context().get_trial_resources().bundles[-1].get("CPU", 1)
+    # )
+
+    # Enable tf32 for better performance
+    torch.backends.cuda.matmul.allow_tf32 = True
+
     set_seed(config["seed"])
 
-    ctx = train.get_context()
-    local_rank = ctx.get_local_rank()
-    world_size = ctx.get_world_size()
+    print("Preparing training arguments")
+    training_args = TrainingArguments(
+        output_dir=config["output_dir"],
+        logging_steps=1,
+        save_strategy="steps",
+        save_steps=config["steps_per_epoch"],
+        max_steps=config["steps_per_epoch"] * config["num_train_epochs"],
+        per_device_train_batch_size=config["batch_size"],
+        gradient_accumulation_steps=1,
+        learning_rate=config["learning_rate"],
+        weight_decay=0.01,
+        warmup_steps=0,
+        label_names=["input_ids", "attention_mask"],
+        push_to_hub=False,
+        report_to="none",
+        disable_tqdm=True,  # declutter the output a little
+        fp16=not torch.cuda.is_bf16_supported(),
+        bf16=torch.cuda.is_bf16_supported(),
+        gradient_checkpointing=True,
+        deepspeed=config["deepspeed_config"],
+        save_safetensors=True,
+    )
 
-    # Load model and tokenizer
+    disable_progress_bar()
+
+    tokenizer = AutoTokenizer.from_pretrained(config["model_name"])
+    tokenizer.pad_token = tokenizer.eos_token
+
+    print("Loading model")
+
     model = AutoModelForCausalLM.from_pretrained(
         config["model_name"],
         trust_remote_code=True,
         torch_dtype=torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16,
         use_cache=False,
         attn_implementation="flash_attention_2",
-        device_map="auto"  # automatically places model on GPU if available
+        # device_map="auto"  # automatically places model on GPU if available
     )
+    model.resize_token_embeddings(len(tokenizer))
 
     if USE_LORA:
         # Apply LoRA to model
         model = get_peft_model(model, LoraConfig(**config["lora_config"]))
 
-    tokenizer = AutoTokenizer.from_pretrained(config["model_name"])
-    dataset, _ = load_and_tokenize_data(config)
+    print("Model loaded")
 
-    # Set up data collator to compute loss only on assistant responses
-    collator = DataCollatorForCompletionOnlyLM(config["response_template"], tokenizer=tokenizer)
+    enable_progress_bar()
 
-    training_args = create_training_args(config, local_rank, world_size)
+    # metric = evaluate.load("accuracy")
 
-    # Create trainer
-    trainer = SFTTrainer(
-        model=model,
-        args=training_args,
-        train_dataset=dataset,
+    train_ds = train.get_dataset_shard("train")
+    eval_ds = train.get_dataset_shard("validation")
+
+    custom_collate_func = functools.partial(
+        collate_func,
         tokenizer=tokenizer,
-        data_collator=collator,
-        dataset_text_field="text",  # Not used since we pre-tokenized, but required
-        max_seq_length=config["max_seq_length"],
-        packing=False,  # Disable packing since we use completion-only loss
+        block_size=Config["block_size"],
+        device="cuda" if torch.cuda.is_available() else "cpu",
     )
 
-    # Train and save
+    train_ds_iterable = train_ds.iter_torch_batches(
+        batch_size=batch_size,
+        local_shuffle_buffer_size=train.get_context().get_world_size() * batch_size,
+        collate_func=custom_collate_func)
+    eval_ds_iterable = eval_ds.iter_torch_batches(batch_size=batch_size,
+                                                  collate_func=custom_collate_func)
+
+    # def compute_metrics(eval_pred):
+    #     logits, labels = eval_pred
+    #     predictions = np.argmax(logits, axis=-1)
+    #     return metric.compute(predictions=predictions, references=labels)
+
+    trainer = Trainer(
+        model=model,
+        args=training_args,
+        train_dataset=train_ds_iterable,
+        eval_dataset=eval_ds_iterable,
+        # compute_metrics=compute_metrics,
+        tokenizer=tokenizer,
+        data_collator=default_data_collator,
+    )
+
+    # Add callback to report checkpoints to Ray Train
+    trainer.add_callback(RayTrainReportCallback())
+    trainer = prepare_trainer(trainer)
     trainer.train()
-
-    # Save model only on one process
-    if ctx.get_world_rank() == 0:
-        # Depending on USE_LORA, either adapter weights or full weights are saved.
-        trainer.save_model(config["output_dir"])
-        tokenizer.save_pretrained(config["output_dir"])
-
 
 # --- Ray Main Function ---
 
@@ -206,32 +237,36 @@ def main():
     # Initialize Ray
     ray.init(log_to_driver=True)
 
-    # Run config
-    run_config = RunConfig(
-        storage_path=get_storage_path(),
-        checkpoint_config=CheckpointConfig(
-            num_to_keep=None,
-            checkpoint_score_attribute="perplexity",
-            checkpoint_score_order="min",
-        ),
-    )
-
+    datasets, dataset_config = get_datasets(config["train_path"], config["validation_path"])
     CONFIG["output_dir"] = get_storage_path()
+    CONFIG["steps_per_epoch"] = (datasets["train"].count()) // (CONFIG["batch_size"] * CONFIG["num_workers"])
 
     trainer = TorchTrainer(
-        train_func,
+        train_loop_per_worker=train_func,
         train_loop_config=CONFIG,
         scaling_config=ScalingConfig(
             num_workers=CONFIG["num_workers"],
             use_gpu=True,
-            resources_per_worker={"GPU": 1, "CPU": 2},
+            resources_per_worker={"GPU": 1, "CPU": 6},
             trainer_resources={"CPU": 0}
         ),
-        run_config=run_config,
+        run_config=RunConfig(
+            storage_path=get_storage_path(),
+            checkpoint_config=CheckpointConfig(
+                num_to_keep=None,
+                checkpoint_score_attribute="perplexity",
+                checkpoint_score_order="min",
+            ),
+        ),
+        datasets=datasets,
+        dataset_config=dataset_config,
     )
 
     result = trainer.fit()
-    print(f"Training completed. Output saved to: {result.checkpoint}")
+    best_checkpoint, best_checkpoint_metrics = result.best_checkpoints[-1]
+
+    print(f"Results are stored at: {result.path}")
+    print(f"Best checkpoint is stored at: {best_checkpoint}, with perplexity: {best_checkpoint_metrics['perplexity']}")
 
 
 if __name__ == "__main__":
