@@ -205,10 +205,10 @@ def train_func(config: dict):
     )
 
     train_ds_iterable = train_ds.iter_torch_batches(
-        batch_size=batch_size,
-        local_shuffle_buffer_size=train.get_context().get_world_size() * batch_size,
+        batch_size=config["batch_size"],
+        local_shuffle_buffer_size=train.get_context().get_world_size() * config["batch_size"],
         collate_func=custom_collate_func)
-    eval_ds_iterable = eval_ds.iter_torch_batches(batch_size=batch_size,
+    eval_ds_iterable = eval_ds.iter_torch_batches(batch_size=config["batch_size"],
                                                   collate_func=custom_collate_func)
 
     # def compute_metrics(eval_pred):
