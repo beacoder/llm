@@ -116,7 +116,7 @@ def do_inference(actor):
 def do_interactive_inference(actor):
     chat_history = [{"role": "system", "content": SYSTEM_PROMPT}]
     while True:
-        user_input = input("Enter your input (type 'quit' to exit): ")
+        user_input = input("Enter your input (type 'quit' to exit):\n")
         if user_input.lower() == "quit":
             print("Goodbye!")
             break
