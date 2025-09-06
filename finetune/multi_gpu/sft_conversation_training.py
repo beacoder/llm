@@ -5,6 +5,7 @@ import functools
 import os
 import re
 import torch
+from torch.utils._pytree import tree_map
 
 import ray
 from ray import train
@@ -36,15 +37,14 @@ USE_LORA = False
 
 # Global config (can be loaded from a JSON or environment later)
 CONFIG = {
-    "model_name": "Qwen2.5-Coder-3B",
-    "num_workers": 2,
-    "block_size": 512,
+    "model_name": "Qwen/Qwen2.5-0.5B-Instruct",
+    "num_workers": 1,
+    "block_size": 16000,
     "batch_size": 1,
     "num_checkpoints_to_keep": 6,
-    "train_path": "train_dataset.jsonl",
-    "validation_path": "test_dataset.jsonl",
+    "train_path": "/home/huming/workspace/ai/finetune/misc/train_dataset.jsonl",
+    "validation_path": "/home/huming/workspace/ai/finetune/misc/test_dataset.jsonl",
     "response_template": "<|im_start|>assistant",
-    "max_seq_length": 16000,
     "seed": 42,
     "learning_rate": 1e-5,
     "num_train_epochs": 6,
@@ -94,7 +94,7 @@ CONFIG = {
 # --- Helper Functions ---
 
 def get_storage_path() -> str:
-    return f"./output/sft_result_checkpoints"
+    return "/home/huming/workspace/ai/finetune/output/sft_result_checkpoints"
 
 def get_datasets(train_path, validation_path):
     train_ds = ray.data.read_json(train_path)
@@ -110,7 +110,7 @@ def get_datasets(train_path, validation_path):
 def collate_func(batch, tokenizer, block_size, device):
     batch_list = tokenizer.apply_chat_template(
             [y for x in batch["messages"] for y in x],
-            chat_template = QWEN2_32B_TEMPLTE,
+            chat_template = tokenizer.chat_template,
             tokenize=False)
 
     if isinstance(block_size, int) and block_size > tokenizer.model_max_length:
@@ -128,16 +128,16 @@ def collate_func(batch, tokenizer, block_size, device):
     )
 
     out_batch["labels"] = out_batch["input_ids"].clone()
-    out_batch = tree.map_structure(lambda x: x.to(device), out_batch)
+    out_batch = tree_map(lambda x: x.to(device), out_batch)
     return out_batch
 
 # --- Training Function ---
 
 def train_func(config: dict):
     # Use the actual number of CPUs assigned by Ray
-    # os.environ["OMP_NUM_THREADS"] = str(
-    #     train.get_context().get_trial_resources().bundles[-1].get("CPU", 1)
-    # )
+    os.environ["OMP_NUM_THREADS"] = str(
+        train.get_context().get_trial_resources().bundles[-1].get("CPU", 1)
+    )
 
     # Enable tf32 for better performance
     torch.backends.cuda.matmul.allow_tf32 = True
@@ -163,7 +163,7 @@ def train_func(config: dict):
         fp16=not torch.cuda.is_bf16_supported(),
         bf16=torch.cuda.is_bf16_supported(),
         gradient_checkpointing=True,
-        deepspeed=config["deepspeed_config"],
+        # deepspeed=config["deepspeed_config"],
         save_safetensors=True,
     )
 
@@ -174,15 +174,20 @@ def train_func(config: dict):
 
     print("Loading model")
 
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Using device: {device}")
+
+    # Model files are cached in ~/.cache/huggingface/hub
     model = AutoModelForCausalLM.from_pretrained(
         config["model_name"],
         trust_remote_code=True,
         torch_dtype=torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16,
         use_cache=False,
-        attn_implementation="flash_attention_2",
+        # attn_implementation="flash_attention_2",
         # device_map="auto"  # automatically places model on GPU if available
     )
     model.resize_token_embeddings(len(tokenizer))
+    model.to(device)
 
     if USE_LORA:
         # Apply LoRA to model
@@ -207,9 +212,11 @@ def train_func(config: dict):
     train_ds_iterable = train_ds.iter_torch_batches(
         batch_size=config["batch_size"],
         local_shuffle_buffer_size=train.get_context().get_world_size() * config["batch_size"],
-        collate_func=custom_collate_func)
+        collate_fn=custom_collate_func
+    )
     eval_ds_iterable = eval_ds.iter_torch_batches(batch_size=config["batch_size"],
-                                                  collate_func=custom_collate_func)
+                                                  collate_fn=custom_collate_func
+                                                  )
 
     # def compute_metrics(eval_pred):
     #     logits, labels = eval_pred
@@ -235,7 +242,7 @@ def train_func(config: dict):
 
 def main():
     # Initialize Ray
-    ray.init(log_to_driver=True)
+    ray.init(log_to_driver=True, object_store_memory=4e9)
 
     datasets, dataset_config = get_datasets(CONFIG["train_path"], CONFIG["validation_path"])
     CONFIG["output_dir"] = get_storage_path()
@@ -247,7 +254,7 @@ def main():
         scaling_config=ScalingConfig(
             num_workers=CONFIG["num_workers"],
             use_gpu=True,
-            resources_per_worker={"GPU": 1, "CPU": 6},
+            resources_per_worker={"GPU": 1, "CPU": 1},
             trainer_resources={"CPU": 0}
         ),
         run_config=RunConfig(
