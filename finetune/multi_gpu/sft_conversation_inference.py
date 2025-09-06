@@ -7,10 +7,10 @@ import json
 
 
 # --- Configuration Constants ---
-USE_LORA = True
+USE_LORA = False
 
-MODEL_PATH = "Qwen2.5-Coder-3B"
-CHECKPOINT_PATH = "./output/sft_result_checkpoints/TorchTrainer_2025-08-28_09-22-39/TorchTrainer_8ade7_00000_0_2025-08-28_09-22-39/checkpoint_000005/"
+MODEL_PATH = "/home/huming/workspace/ai/finetune/output/sft_result_checkpoints/checkpoint-696"
+CHECKPOINT_PATH = "/home/huming/workspace/ai/finetune/output/sft_result_checkpoints/checkpoint-696"
 VERIFICATION_PATH = "./verify_dataset.jsonl"
 
  # this is for saving merged_model
@@ -18,7 +18,7 @@ OUTPUT_PATH = "./output/merged_model"
 
 START_TOKEN = "assistant\n"
 STOP_TOKEN = "<tool_response>\n"
-SYSTEM_PROMPT = "You're a helpful assistant for answering questions!"
+SYSTEM_PROMPT = "You are a naughty girlfriend, your task is to answer boyfriend's questions."
 SEPARATOR_LINE = "===================================================================================================================================================================================="
 
 # --- Helper Functions ---
@@ -46,7 +46,7 @@ def load_model(tokenizer, model_path, lora_path=None, lora_enabled=False):
     model = model.eval().to(model.device)  # Set mode + ensure correct device
     return model
 
-def build_chat_input(messages):
+def build_chat_input(tokenizer, messages):
     return tokenizer.apply_chat_template(
         messages,
         add_generation_prompt=True,
@@ -66,7 +66,7 @@ def extract_last_ai_response(output_list):
     return output[start_index:stop_index]
 
 # --- Model Actor Definition ---
-@ray.remote(num_gpus=2)
+@ray.remote(num_gpus=2 if USE_LORA else 1)
 class ModelActor:
     def __init__(self):
         tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH, legacy=True)
@@ -79,7 +79,7 @@ class ModelActor:
         self.device = self.model.device
 
     def predict(self, input_data, max_new_tokens=16000):
-        inputs = build_chat_input(input_data)
+        inputs = build_chat_input(self.tokenizer,input_data)
         print("Inference input:", inputs)
         tokenized = self.tokenizer([inputs], return_tensors="pt", add_special_tokens=False)
         input_ids = tokenized["input_ids"].to(self.device)
@@ -113,10 +113,21 @@ def do_inference(actor):
                 chat_history.append({"role": "assistant", "content": inference(actor, chat_history)})
             print(SEPARATOR_LINE)
 
+def do_interactive_inference(actor):
+    chat_history = [{"role": "system", "content": SYSTEM_PROMPT}]
+    while True:
+        user_input = input("Enter your input (type 'quit' to exit): ")
+        if user_input.lower() == "quit":
+            print("Goodbye!")
+            break
+        chat_history.append({"role": "user", "content": user_input})
+        chat_history.append({"role": "assistant", "content": inference(actor, chat_history)})
+
 
 # --- Main Execution ---
 if __name__ == "__main__":
     ray.init()
     actor = ModelActor.remote()
-    do_inference(actor)
+    # do_inference(actor)
+    do_interactive_inference(actor)
     ray.shutdown()
