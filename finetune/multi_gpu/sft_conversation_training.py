@@ -273,7 +273,7 @@ def main():
     best_checkpoint, best_checkpoint_metrics = result.best_checkpoints[-1]
 
     print(f"Results are stored at: {result.path}")
-    print(f"Best checkpoint is stored at: {best_checkpoint}, with perplexity: {best_checkpoint_metrics['perplexity']}")
+    print(f"Best checkpoint is stored at: {best_checkpoint}")
 
 
 if __name__ == "__main__":
