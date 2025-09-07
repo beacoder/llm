@@ -46,7 +46,8 @@ CONFIG = {
     "response_template": "<|im_start|>assistant",
     "seed": 42,
     "learning_rate": 1e-5,
-    "num_train_epochs": 1,
+    "num_train_epochs": 10,
+    "checkpoint_to_keep": 1,
     "deepspeed_config": {
         "fp16": {"enabled": "auto"},
         "bf16": {"enabled": "auto"},
@@ -254,12 +255,11 @@ def main():
             num_workers=CONFIG["num_workers"],
             use_gpu=True,
             resources_per_worker={"GPU": 1, "CPU": 1},
-            trainer_resources={"CPU": 0}
         ),
         run_config=RunConfig(
             storage_path=get_storage_path(),
             checkpoint_config=CheckpointConfig(
-                num_to_keep=None,
+                num_to_keep=CONFIG["checkpoint_to_keep"],
                 checkpoint_score_attribute="perplexity",
                 checkpoint_score_order="min",
             ),
