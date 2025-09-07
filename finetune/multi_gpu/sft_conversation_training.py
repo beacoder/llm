@@ -2,9 +2,7 @@
 # @see https://docs.ray.io/en/latest/train/examples/deepspeed/gptj_deepspeed_fine_tuning.html
 
 import deepspeed
-import evaluate
 import functools
-import numpy as np
 import os
 import torch
 from torch.utils._pytree import tree_map
@@ -38,6 +36,7 @@ USE_LORA = False
 # Global config (can be loaded from a JSON or environment later)
 CONFIG = {
     "model_name": "Qwen/Qwen2.5-0.5B-Instruct",
+    # "model_name": "/home/huming/workspace/ai/finetune/output/sft_result_checkpoints/TorchTrainer_2025-09-07_23-43-24/TorchTrainer_63d7a_00000_0_2025-09-07_23-43-24/checkpoint_000004/checkpoint",
     "num_workers": 1,
     "block_size": 16000,
     "batch_size": 1,
@@ -46,8 +45,8 @@ CONFIG = {
     "response_template": "<|im_start|>assistant",
     "seed": 42,
     "learning_rate": 1e-5,
-    "num_train_epochs": 10,
-    "checkpoint_to_keep": 1,
+    "num_train_epochs": 5,
+    "checkpoint_to_keep": None,
     "deepspeed_config": {
         "fp16": {"enabled": "auto"},
         "bf16": {"enabled": "auto"},
@@ -147,7 +146,9 @@ def train_func(config: dict):
     print("Preparing training arguments")
     training_args = TrainingArguments(
         logging_steps=10,
-        eval_steps=50,
+        eval_strategy="steps",
+        eval_steps=5,
+        metric_for_best_model="eval_loss",
         save_strategy="steps",
         save_steps=config["steps_per_epoch"],
         max_steps=config["steps_per_epoch"] * config["num_train_epochs"],
@@ -198,8 +199,6 @@ def train_func(config: dict):
 
     enable_progress_bar()
 
-    metric = evaluate.load("accuracy")
-
     train_ds = train.get_dataset_shard("train")
     eval_ds = train.get_dataset_shard("validation")
 
@@ -219,17 +218,11 @@ def train_func(config: dict):
                                                   collate_fn=custom_collate_func
                                                   )
 
-    def compute_metrics(eval_pred):
-        logits, labels = eval_pred
-        predictions = np.argmax(logits, axis=-1)
-        return metric.compute(predictions=predictions, references=labels)
-
     trainer = Trainer(
         model=model,
         args=training_args,
         train_dataset=train_ds_iterable,
         eval_dataset=eval_ds_iterable,
-        compute_metrics=compute_metrics,
         tokenizer=tokenizer,
         data_collator=default_data_collator,
     )
