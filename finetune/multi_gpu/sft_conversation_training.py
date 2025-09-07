@@ -1,11 +1,14 @@
 # Fine-Tuning with Ray Train and DeepSpeed
 # @see https://docs.ray.io/en/latest/train/examples/deepspeed/gptj_deepspeed_fine_tuning.html
 
+import deepspeed
+import evaluate
 import functools
+import numpy as np
 import os
-import re
 import torch
 from torch.utils._pytree import tree_map
+from peft import LoraConfig, get_peft_model
 
 import ray
 from ray import train
@@ -13,9 +16,6 @@ from ray.train import RunConfig, ScalingConfig, CheckpointConfig
 from ray.train.huggingface.transformers import prepare_trainer, RayTrainReportCallback
 from ray.train.torch import TorchTrainer
 
-import deepspeed
-from peft import LoraConfig, get_peft_model
-# import evaluate
 from transformers.utils.logging import disable_progress_bar, enable_progress_bar
 from transformers import (
     Trainer,
@@ -41,13 +41,12 @@ CONFIG = {
     "num_workers": 1,
     "block_size": 16000,
     "batch_size": 1,
-    "num_checkpoints_to_keep": 6,
     "train_path": "/home/huming/workspace/ai/finetune/misc/train_dataset.jsonl",
     "validation_path": "/home/huming/workspace/ai/finetune/misc/test_dataset.jsonl",
     "response_template": "<|im_start|>assistant",
     "seed": 42,
     "learning_rate": 1e-5,
-    "num_train_epochs": 6,
+    "num_train_epochs": 1,
     "deepspeed_config": {
         "fp16": {"enabled": "auto"},
         "bf16": {"enabled": "auto"},
@@ -146,12 +145,13 @@ def train_func(config: dict):
 
     print("Preparing training arguments")
     training_args = TrainingArguments(
-        output_dir=config["output_dir"],
-        logging_steps=1,
+        logging_steps=10,
+        eval_steps=50,
         save_strategy="steps",
         save_steps=config["steps_per_epoch"],
         max_steps=config["steps_per_epoch"] * config["num_train_epochs"],
         per_device_train_batch_size=config["batch_size"],
+        per_device_eval_batch_size=config["batch_size"],
         gradient_accumulation_steps=1,
         learning_rate=config["learning_rate"],
         weight_decay=0.01,
@@ -197,7 +197,7 @@ def train_func(config: dict):
 
     enable_progress_bar()
 
-    # metric = evaluate.load("accuracy")
+    metric = evaluate.load("accuracy")
 
     train_ds = train.get_dataset_shard("train")
     eval_ds = train.get_dataset_shard("validation")
@@ -218,17 +218,17 @@ def train_func(config: dict):
                                                   collate_fn=custom_collate_func
                                                   )
 
-    # def compute_metrics(eval_pred):
-    #     logits, labels = eval_pred
-    #     predictions = np.argmax(logits, axis=-1)
-    #     return metric.compute(predictions=predictions, references=labels)
+    def compute_metrics(eval_pred):
+        logits, labels = eval_pred
+        predictions = np.argmax(logits, axis=-1)
+        return metric.compute(predictions=predictions, references=labels)
 
     trainer = Trainer(
         model=model,
         args=training_args,
         train_dataset=train_ds_iterable,
         eval_dataset=eval_ds_iterable,
-        # compute_metrics=compute_metrics,
+        compute_metrics=compute_metrics,
         tokenizer=tokenizer,
         data_collator=default_data_collator,
     )
@@ -245,7 +245,6 @@ def main():
     ray.init(log_to_driver=True, object_store_memory=4e9)
 
     datasets, dataset_config = get_datasets(CONFIG["train_path"], CONFIG["validation_path"])
-    CONFIG["output_dir"] = get_storage_path()
     CONFIG["steps_per_epoch"] = (datasets["train"].count()) // (CONFIG["batch_size"] * CONFIG["num_workers"])
 
     trainer = TorchTrainer(
@@ -270,10 +269,7 @@ def main():
     )
 
     result = trainer.fit()
-    best_checkpoint, best_checkpoint_metrics = result.best_checkpoints[-1]
-
     print(f"Results are stored at: {result.path}")
-    print(f"Best checkpoint is stored at: {best_checkpoint}")
 
 
 if __name__ == "__main__":
