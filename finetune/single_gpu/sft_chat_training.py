@@ -105,21 +105,6 @@ print(f"Reserved memory: {start_gpu_memory} GB")
 # Start model training
 trainer_stats = trainer.train()
 
-# Inference
-FastLanguageModel.for_inference(model) # Enable native 2x faster inference
-inputs = tokenizer(
-    [
-        alpaca_prompt.format(
-            "明天吃啥?",  # question
-            "",  # answer (leave blank for generation)
-        )
-    ],
-    return_tensors = "pt"
-).to("cuda")
-
-text_streamer = TextStreamer(tokenizer)
-_ = model.generate(**inputs, streamer = text_streamer, max_new_tokens = 128)
-
 # Save LoRA adapters
 model.save_pretrained("qwen2.5-3B-chat")
 tokenizer.save_pretrained("qwen2.5-3B-chat")
