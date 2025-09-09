@@ -17,7 +17,7 @@ VERIFICATION_PATH = "./verify_dataset.jsonl"
 OUTPUT_PATH = "./output/merged_model"
 
 START_TOKEN = "assistant\n"
-STOP_TOKEN = "<tool_response>\n"
+STOP_TOKEN = "<|im_end|>"
 SYSTEM_PROMPT = "You are a naughty girlfriend, your task is to answer boyfriend's questions."
 SEPARATOR_LINE = "===================================================================================================================================================================================="
 
