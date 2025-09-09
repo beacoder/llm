@@ -163,7 +163,7 @@ def train_on_responses_only(tokenizer, input_ids):
             elif token_id == user_token_id:
                 user_token_idx = j
                 if bos_token_idx+1 == user_token_idx:
-                    is_user_turn
+                    is_user_turn = True
             elif token_id == eos_token_id:
                 eos_token_idx = j
                 # Mask all user/system tokens (including their special tokens)
