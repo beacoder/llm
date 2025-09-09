@@ -80,7 +80,7 @@ class ModelActor:
 
     def predict(self, input_data, max_new_tokens=16000):
         inputs = build_chat_input(self.tokenizer,input_data)
-        print("Inference input:", inputs)
+        print("Inference input:\n", inputs)
         tokenized = self.tokenizer([inputs], return_tensors="pt", add_special_tokens=False)
         input_ids = tokenized["input_ids"].to(self.device)
 
