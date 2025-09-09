@@ -32,6 +32,7 @@ from transformers import (
 # --- Configuration Section ---
 
 USE_LORA = False
+TRAIN_ON_RESPONSES_ONLY = True
 
 # Global config (can be loaded from a JSON or environment later)
 CONFIG = {
@@ -126,9 +127,61 @@ def collate_func(batch, tokenizer, block_size, device):
         return_tensors="pt",
     )
 
-    out_batch["labels"] = out_batch["input_ids"].clone()
+    if TRAIN_ON_RESPONSES_ONLY:
+        out_batch["labels"] = train_on_responses_only(tokenizer, out_batch["input_ids"])
+        print_to_verify_lables(tokenizer, out_batch["input_ids"], out_batch["labels"])
+    else:
+        out_batch["labels"] = out_batch["input_ids"].clone()
+
     out_batch = tree_map(lambda x: x.to(device), out_batch)
     return out_batch
+
+# assume input_ids is a 2D PyTorch tensor
+def train_on_responses_only(tokenizer, input_ids):
+    labels = input_ids.clone()
+
+    bos_token_id = "<|im_start|>"
+    eos_token_id = "<|im_end|>"
+    user_token_id = "user"
+
+    is_user_turn = False
+    bos_token_idx = 0
+    eos_token_idx = 0
+    system_token_idx = 0
+    user_token_idx = 0
+
+    for i, sequence in enumerate(input_ids):
+        for j, token_id in enumerate(sequence):
+            token_id = tokenizer.decode(token_id)
+            if token_id == bos_token_id:
+                bos_token_idx = j
+            elif token_id == system_token_id:
+                system_token_idx = j
+                if bos_token_idx+1 == system_token_idx:
+                    # mask system as well
+                    is_user_turn = True
+            elif token_id == user_token_id:
+                user_token_idx = j
+                if bos_token_idx+1 == user_token_idx:
+                    is_user_turn
+            elif token_id == eos_token_id:
+                eos_token_idx = j
+                # Mask all user/system tokens (including their special tokens)
+                if is_user_turn:
+                    if user_token_idx > system_token_idx:
+                        begin_idx = user_token_idx-1
+                    else:
+                        begin_idx = system_token_idx-1
+                    # Ignore in loss calculation
+                    labels[i:, user_token_idx-1:eos_token_idx+2] = -100
+                    is_user_turn = False
+    return labels
+
+def print_to_verify_lables(tokenizer, input_ids, labels):
+    for i, sequence in enumerate(input_ids):
+        # decode to verify
+        for j, (input_id, label) in enumerate(zip(input_ids[i], labels[i])):
+            print(f"Token {j}: {tokenizer.decode(input_id)} | Label: {label}")
 
 # --- Training Function ---
 
