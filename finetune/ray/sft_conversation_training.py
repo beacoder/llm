@@ -129,7 +129,7 @@ def collate_func(batch, tokenizer, block_size, device):
 
     if TRAIN_ON_RESPONSES_ONLY:
         out_batch["labels"] = train_on_responses_only(tokenizer, out_batch["input_ids"])
-        print_to_verify_lables(tokenizer, out_batch["input_ids"], out_batch["labels"])
+        # print_to_verify_lables(tokenizer, out_batch["input_ids"], out_batch["labels"])
     else:
         out_batch["labels"] = out_batch["input_ids"].clone()
 
@@ -204,7 +204,7 @@ def train_func(config: dict):
         disable_tqdm=True,  # declutter the output a little
         fp16=not torch.cuda.is_bf16_supported(),
         bf16=torch.cuda.is_bf16_supported(),
-        gradient_checkpointing=True,
+        gradient_checkpointing=not USE_LORA,
         # deepspeed=config["deepspeed_config"],
         save_safetensors=True,
     )
@@ -229,11 +229,11 @@ def train_func(config: dict):
         # device_map="auto"  # automatically places model on GPU if available
     )
     model.resize_token_embeddings(len(tokenizer))
-    model.to(device)
 
     if USE_LORA:
         # Apply LoRA to model
         model = get_peft_model(model, LoraConfig(**config["lora_config"]))
+        model.print_trainable_parameters()  # Verify
 
     print("Model loaded")
 
