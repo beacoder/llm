@@ -136,45 +136,31 @@ def collate_func(batch, tokenizer, block_size, device):
     out_batch = tree_map(lambda x: x.to(device), out_batch)
     return out_batch
 
-# assume input_ids is a 2D PyTorch tensor
-def train_on_responses_only(tokenizer, input_ids):
+def train_on_responses_only(tokenizer, input_idsa):
     labels = input_ids.clone()
-
     bos_token_id = "<|im_start|>"
     eos_token_id = "<|im_end|>"
-    user_token_id = "user"
-
-    is_user_turn = False
-    bos_token_idx = 0
-    eos_token_idx = 0
-    system_token_idx = 0
-    user_token_idx = 0
-
-    for i, sequence in enumerate(input_ids):
-        for j, token_id in enumerate(sequence):
-            token_id = tokenizer.decode(token_id)
-            if token_id == bos_token_id:
-                bos_token_idx = j
-            elif token_id == system_token_id:
-                system_token_idx = j
-                if bos_token_idx+1 == system_token_idx:
-                    # mask system as well
-                    is_user_turn = True
-            elif token_id == user_token_id:
-                user_token_idx = j
-                if bos_token_idx+1 == user_token_idx:
-                    is_user_turn = True
-            elif token_id == eos_token_id:
-                eos_token_idx = j
-                # Mask all user/system tokens (including their special tokens)
-                if is_user_turn:
-                    if user_token_idx > system_token_idx:
-                        begin_idx = user_token_idx-1
-                    else:
-                        begin_idx = system_token_idx-1
-                    # Ignore in loss calculation
-                    labels[i:, user_token_idx-1:eos_token_idx+2] = -100
-                    is_user_turn = False
+    for j, sequence in enumerate(input_ids):
+        # Parse roles to identify which tokens to mask
+        tokens = tokenizer.convert_ids_to_tokens(sequence)
+        current_role = None
+        for i, token in enumerate(tokens):
+            if token == bos_token_id:
+                # Next token should be the role
+                if i + 1 < len(tokens):
+                    role_token = tokens[i + 1]
+                    if role_token in ["system", "user"]:
+                        current_role = "mask"
+                    elif role_token == "assistant":
+                        current_role = "keep"
+            # Mask tokens belonging to system/user roles
+            if current_role == "mask":
+                labels[j:, i] = -100
+                # Mask the last "\n"
+                if token == eos_token_id:
+                    labels[j:, i + 1] = -100
+            if token == eos_token_id:
+                current_role = None
     return labels
 
 def print_to_verify_lables(tokenizer, input_ids, labels):
