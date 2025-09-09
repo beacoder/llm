@@ -233,6 +233,7 @@ def train_func(config: dict):
     if USE_LORA:
         # Apply LoRA to model
         model = get_peft_model(model, LoraConfig(**config["lora_config"]))
+        print("Using LORA")
         model.print_trainable_parameters()  # Verify
 
     print("Model loaded")
