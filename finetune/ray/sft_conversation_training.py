@@ -137,7 +137,7 @@ def collate_func(batch, tokenizer, block_size, device):
     return out_batch
 
 # assume input_ids is a 2D PyTorch tensor
-def train_on_responses_only(tokenizer, input_idsa):
+def train_on_responses_only(tokenizer, input_ids):
     labels = input_ids.clone()
     bos_token_id = "<|im_start|>"
     eos_token_id = "<|im_end|>"
