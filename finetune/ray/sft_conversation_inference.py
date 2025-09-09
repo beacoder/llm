@@ -40,7 +40,7 @@ def load_model(tokenizer, model_path, lora_path=None, lora_enabled=False):
 
     if lora_enabled and lora_path:
         model = PeftModel.from_pretrained(model, lora_path).merge_and_unload()
-        save_merged_model(tokenizer, model, Path(OUTPUT_PATH))
+        # save_merged_model(tokenizer, model, Path(OUTPUT_PATH))
 
     # Common pattern for inference
     model = model.eval().to(model.device)  # Set mode + ensure correct device
@@ -87,7 +87,7 @@ class ModelActor:
         with torch.no_grad():  # Disable gradient tracking
             outputs = self.model.generate(
                 input_ids=input_ids,
-                output_scores=True,
+                attention_mask=tokenized["attention_mask"],
                 temperature=0.01,
                 max_new_tokens=max_new_tokens
             )
