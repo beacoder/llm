@@ -291,7 +291,7 @@ def main():
             storage_path=get_storage_path(),
             checkpoint_config=CheckpointConfig(
                 num_to_keep=CONFIG["checkpoint_to_keep"],
-                checkpoint_score_attribute="perplexity",
+                checkpoint_score_attribute="eval_loss",
                 checkpoint_score_order="min",
             ),
         ),
