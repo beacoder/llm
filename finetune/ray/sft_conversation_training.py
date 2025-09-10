@@ -255,16 +255,16 @@ def train_func(config: dict):
         local_shuffle_buffer_size=train.get_context().get_world_size() * config["batch_size"],
         collate_fn=custom_collate_func
     )
-    eval_ds_iterable = eval_ds.iter_torch_batches(batch_size=config["batch_size"],
-                                                  collate_fn=custom_collate_func
-                                                  )
+    eval_ds_iterable = eval_ds.iter_torch_batches(
+        batch_size=config["batch_size"],
+        collate_fn=custom_collate_func
+    )
 
     trainer = Trainer(
         model=model,
         args=training_args,
         train_dataset=train_ds_iterable,
         eval_dataset=eval_ds_iterable,
-        tokenizer=tokenizer,
         data_collator=default_data_collator,
     )
 
