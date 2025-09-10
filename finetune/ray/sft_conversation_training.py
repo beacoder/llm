@@ -12,7 +12,7 @@ import ray
 from ray import train
 from ray.train import RunConfig, ScalingConfig, CheckpointConfig
 from ray.train.huggingface.transformers import prepare_trainer, RayTrainReportCallback
-from ray.train.torch import TorchTrainer
+from ray.train.torch import TorchTrainer, get_device
 
 from transformers.utils.logging import disable_progress_bar, enable_progress_bar
 from transformers import (
@@ -216,7 +216,7 @@ def train_func(config: dict):
 
     print("Loading model")
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = get_device()
     print(f"Using device: {device}")
 
     # Model files are cached in ~/.cache/huggingface/hub
@@ -225,7 +225,7 @@ def train_func(config: dict):
         trust_remote_code=True,
         torch_dtype=torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16,
         use_cache=False,
-        # attn_implementation="flash_attention_2",
+        attn_implementation="flash_attention_2",
         # device_map="auto"  # automatically places model on GPU if available
     )
     model.resize_token_embeddings(len(tokenizer))
@@ -247,7 +247,7 @@ def train_func(config: dict):
         collate_func,
         tokenizer=tokenizer,
         block_size=config["block_size"],
-        device="cuda" if torch.cuda.is_available() else "cpu",
+        device=device,
     )
 
     train_ds_iterable = train_ds.iter_torch_batches(
