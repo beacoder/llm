@@ -103,9 +103,7 @@ def get_datasets(train_path, validation_path):
         "train": train_ds,
         "validation": eval_ds
     }
-    config = ray.train.DataConfig(
-        datasets_to_split=["train", "validation"])
-    return datasets, config
+    return datasets
 
 def collate_func(batch, tokenizer, block_size, device):
     batch_list = tokenizer.apply_chat_template(
@@ -278,7 +276,7 @@ def main():
     # Initialize Ray
     ray.init(log_to_driver=True, object_store_memory=4e9)
 
-    datasets, dataset_config = get_datasets(CONFIG["train_path"], CONFIG["validation_path"])
+    datasets = get_datasets(CONFIG["train_path"], CONFIG["validation_path"])
     CONFIG["steps_per_epoch"] = (datasets["train"].count()) // (CONFIG["batch_size"] * CONFIG["num_workers"])
 
     trainer = TorchTrainer(
@@ -298,7 +296,6 @@ def main():
             ),
         ),
         datasets=datasets,
-        dataset_config=dataset_config,
     )
 
     result = trainer.fit()
