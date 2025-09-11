@@ -77,20 +77,23 @@ trainer = SFTTrainer(
     dataset_num_proc = 2,
     packing = False, # Can make training 5x faster for short sequences.
     args = TrainingArguments(
+        logging_steps=10,
+        eval_strategy="epoch",
         per_device_train_batch_size = 2,
+        per_device_eval_batch_size = 2,
         gradient_accumulation_steps = 4,
+        learning_rate = 2e-4,
+        weight_decay = 0.01,
         warmup_steps = 5,
         num_train_epochs=5,
-        # max_steps = 60,
-        learning_rate = 2e-4,
+        report_to = "none", # Use this for WandB etc
+        disable_tqdm=True,  # declutter the output a little
         fp16 = not is_bfloat16_supported(),
         bf16 = is_bfloat16_supported(),
-        logging_steps = 1,
         optim = "adamw_8bit",
-        weight_decay = 0.01,
         lr_scheduler_type = "linear",
         seed = 3407,
-        report_to = "none", # Use this for WandB etc
+        save_safetensors=True,
     ),
 )
 
