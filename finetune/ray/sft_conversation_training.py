@@ -203,7 +203,7 @@ def train_func(config: dict):
         fp16=not torch.cuda.is_bf16_supported(),
         bf16=torch.cuda.is_bf16_supported(),
         gradient_checkpointing=not USE_LORA,
-        # deepspeed=config["deepspeed_config"],
+        # deepspeed=config["deepspeed_config"],  # Enable when you have multiple GPUs
         save_safetensors=True,
     )
 
