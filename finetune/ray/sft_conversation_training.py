@@ -186,7 +186,6 @@ def train_func(config: dict):
         logging_steps=10,
         eval_strategy="steps",
         eval_steps=5,
-        metric_for_best_model="eval_loss",
         save_strategy="steps",
         save_steps=config["steps_per_epoch"],
         max_steps=config["steps_per_epoch"] * config["num_train_epochs"],
