@@ -276,7 +276,7 @@ def main():
     ray.init(log_to_driver=True, object_store_memory=4e9)
 
     datasets = get_datasets(CONFIG["train_path"], CONFIG["validation_path"])
-    CONFIG["steps_per_epoch"] = (datasets["train"].count()) // (CONFIG["batch_size"] * CONFIG["num_workers"])
+    CONFIG["steps_per_epoch"] = (datasets["train"].count()) // (CONFIG["batch_size"])
 
     trainer = TorchTrainer(
         train_loop_per_worker=train_func,
