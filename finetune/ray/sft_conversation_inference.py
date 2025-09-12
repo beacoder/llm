@@ -7,10 +7,11 @@ import json
 
 
 # --- Configuration Constants ---
-USE_LORA = False
+USE_LORA = True
 
-MODEL_PATH = "/home/huming/workspace/ai/finetune/output/sft_result_checkpoints/checkpoint-696"
-CHECKPOINT_PATH = "/home/huming/workspace/ai/finetune/output/sft_result_checkpoints/checkpoint-696"
+MODEL_PATH = "Qwen/Qwen2.5-0.5B-Instruct"
+# MODEL_PATH = "/home/huming/workspace/ai/finetune/output/sft_result_checkpoints/TorchTrainer_2025-09-08_00-55-48/TorchTrainer_80f8e_00000_0_2025-09-08_00-55-48/checkpoint_000001/checkpoint"
+CHECKPOINT_PATH = "/home/huming/workspace/ai/finetune/output/sft_result_checkpoints/TorchTrainer_2025-09-10_22-15-13/TorchTrainer_915ed_00000_0_2025-09-10_22-15-13/checkpoint_000003/checkpoint"
 VERIFICATION_PATH = "./verify_dataset.jsonl"
 
  # this is for saving merged_model
@@ -32,7 +33,7 @@ def load_model(tokenizer, model_path, lora_path=None, lora_enabled=False):
     model = AutoModelForCausalLM.from_pretrained(
         model_path,
         trust_remote_code=True,
-        torch_dtype=torch.bfloat16,
+        dtype=torch.bfloat16,
         use_cache=False,
         device_map= None if USE_LORA else "auto"
     )
@@ -116,10 +117,14 @@ def do_inference(actor):
 def do_interactive_inference(actor):
     chat_history = [{"role": "system", "content": SYSTEM_PROMPT}]
     while True:
-        user_input = input("Enter your input (type 'quit' to exit):\n")
+        user_input = input("\nYour input (quit/clear): ").strip()
         if user_input.lower() == "quit":
-            print("Goodbye!")
+            print("Goodbye")
             break
+        if user_input.lower() == "clear":
+            chat_history = [{"role": "system", "content": SYSTEM_PROMPT}]
+            print("Chat cleared")
+            continue
         chat_history.append({"role": "user", "content": user_input})
         chat_history.append({"role": "assistant", "content": inference(actor, chat_history)})
 
