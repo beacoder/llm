@@ -108,7 +108,7 @@ def get_datasets(train_path, validation_path):
 def collate_func(batch, tokenizer, block_size, device):
     batch_list = tokenizer.apply_chat_template(
             [y for x in batch["messages"] for y in x],
-            chat_template = tokenizer.chat_template,
+            # chat_template = tokenizer.chat_template,  # Enable when using different chat_template
             tokenize=False)
 
     if isinstance(block_size, int) and block_size > tokenizer.model_max_length:
