@@ -10,12 +10,9 @@ import json
 USE_LORA = True
 
 MODEL_PATH = "Qwen/Qwen2.5-0.5B-Instruct"
-# MODEL_PATH = "/home/huming/workspace/ai/finetune/output/sft_result_checkpoints/TorchTrainer_2025-09-08_00-55-48/TorchTrainer_80f8e_00000_0_2025-09-08_00-55-48/checkpoint_000001/checkpoint"
 CHECKPOINT_PATH = "/home/huming/workspace/ai/finetune/output/sft_result_checkpoints/TorchTrainer_2025-09-10_22-15-13/TorchTrainer_915ed_00000_0_2025-09-10_22-15-13/checkpoint_000003/checkpoint"
 VERIFICATION_PATH = "./verify_dataset.jsonl"
-
- # this is for saving merged_model
-OUTPUT_PATH = "./output/merged_model"
+OUTPUT_PATH = "/home/huming/workspace/ai/finetune/output/merged_model"
 
 START_TOKEN = "assistant\n"
 STOP_TOKEN = "<|im_end|>"
@@ -82,13 +79,11 @@ class ModelActor:
     def predict(self, input_data, max_new_tokens=16000):
         inputs = build_chat_input(self.tokenizer,input_data)
         print("Inference input:\n", inputs)
-        tokenized = self.tokenizer([inputs], return_tensors="pt", add_special_tokens=False)
-        input_ids = tokenized["input_ids"].to(self.device)
+        model_inputs = self.tokenizer([inputs], return_tensors="pt", add_special_tokens=False).to(self.device)
 
         with torch.no_grad():  # Disable gradient tracking
             outputs = self.model.generate(
-                input_ids=input_ids,
-                attention_mask=tokenized["attention_mask"],
+                **model_inputs,
                 temperature=0.01,
                 max_new_tokens=max_new_tokens
             )
@@ -125,6 +120,7 @@ def do_interactive_inference(actor):
             chat_history = [{"role": "system", "content": SYSTEM_PROMPT}]
             print("Chat cleared")
             continue
+        user_input = user_input.encode('utf-8', 'ignore').decode('utf-8')
         chat_history.append({"role": "user", "content": user_input})
         chat_history.append({"role": "assistant", "content": inference(actor, chat_history)})
 
