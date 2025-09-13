@@ -221,7 +221,7 @@ def train_func(config: dict):
     model = AutoModelForCausalLM.from_pretrained(
         config["model_name"],
         trust_remote_code=True,
-        torch_dtype=torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16,
+        dtype=torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16,
         use_cache=False,
         # attn_implementation="flash_attention_2",  # FlashAttention is only supported on CUDA 11.7 and above
     )
