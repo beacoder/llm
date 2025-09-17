@@ -17,3 +17,23 @@
 3. You want to fine-tune a model to follow instructions or respond in chats.
 4. You want automatic masking of loss so only the assistant's reply contributes to the loss.
 5. You're using datasets in these formats: ChatML, Alpaca, UltraChat.
+
+# LoRA vs Full-Parameter Fine-Tuning
+## ✅ **LoRA is usually better**:
+  - **Efficiency**:
+    - Trains **<1% of parameters** (vs. 100% in full fine-tuning).
+    - **Fits on small GPUs** (e.g., 24GB VRAM), avoids OOM errors.
+  - **Performance**:
+    - Matches/maintains full fine-tuning accuracy for most tasks (including sentiment analysis).
+    - **Less catastrophic forgetting** (preserves base knowledge better).
+  - **Practicality**:
+    - Instantly switch tasks by swapping LoRA weights.
+    - Merge weights post-training for deployment (no inference overhead).
+
+## ⚠️ **Full fine-tuning only if**:
+  - You have **massive task-specific data** (e.g., >1M labeled examples).
+  - You have **dedicated infrastructure** (multi-GPU, high VRAM).
+  - Marginal accuracy gains justify **3-4× higher cost** (training + storage).
+
+## Recommendation:
+  **Start with LoRA** (`r=8`, `alpha=16`). It’s the **industry standard** for task adaptation (used in 90%+ of real-world deployments). Only consider full fine-tuning if LoRA underperforms *and* you have resources to burn.
