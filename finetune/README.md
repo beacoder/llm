@@ -36,5 +36,5 @@
   - Marginal accuracy gains justify **3-4× higher cost** (training + storage).
 
 ## Recommendation:
-  **Start with LoRA** (`r=8`, `alpha=16`). It’s the **industry standard** for task adaptation (used in 90%+ of real-world deployments).
-  **Only consider full fine-tuning** if LoRA underperforms *and* you have resources to burn.
+  - **Start with LoRA** (`r=8`, `alpha=16`). It’s the **industry standard** for task adaptation (used in 90%+ of real-world deployments).
+  - **Only consider full fine-tuning** if LoRA underperforms *and* you have resources to burn.
