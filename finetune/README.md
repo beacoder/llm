@@ -40,6 +40,6 @@
   - **Only consider full fine-tuning** if LoRA underperforms *and* you have resources to burn.
 
 # Non-Reasoning vs Reasoning
-✅ LLMs are excellent at statistical pattern matching — but not “understanding” in the human sense.
-✅ Reasoning improves accuracy by forcing structured, step-by-step generation — reducing errors and hallucinations.
-✅ Reasoning helps LLMs tap into deeper, more robust “hidden patterns” in the data — especially multi-step, causal, or logical structures that lead to correct answers.
+- ✅ LLMs are excellent at statistical pattern matching — but not “understanding” in the human sense.
+- ✅ Reasoning improves accuracy by forcing structured, step-by-step generation — reducing errors and hallucinations.
+- ✅ Reasoning helps LLMs tap into deeper, more robust “hidden patterns” in the data — especially multi-step, causal, or logical structures that lead to correct answers.
