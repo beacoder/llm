@@ -43,3 +43,8 @@
 - ✅ LLMs are excellent at statistical pattern matching — but not “understanding” in the human sense.
 - ✅ Reasoning improves accuracy by forcing structured, step-by-step generation — reducing errors and hallucinations.
 - ✅ Reasoning helps LLMs tap into deeper, more robust “hidden patterns” in the data — especially multi-step, causal, or logical structures that lead to correct answers.
+## Reasoning prompts
+- Let's think step by step.
+- Always reason step by step before answering.
+- Reason through this step by step to ensure your answer is correct.
+- Etc.
