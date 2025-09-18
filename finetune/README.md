@@ -23,11 +23,3 @@
 ## ⚠️ **Full FT Only If**
   - **>1M task-specific samples** + **dedicated multi-GPU infrastructure**.
   - Marginal accuracy gains justify **3–4× higher costs**.
-
-# Reasoning Capabilities
-- LLMs excel at **statistical pattern matching** (not human-like "understanding").
-- **Reasoning prompts** (e.g., *"Let's think step by step"*) improve accuracy by:
-  - Enforcing **structured, step-by-step generation**.
-  - Reducing **errors/hallucinations**.
-  - Unlocking **deeper causal/logical patterns** in data.
-  *Common prompts: "Reason step by step", "Ensure correctness via reasoning".*
