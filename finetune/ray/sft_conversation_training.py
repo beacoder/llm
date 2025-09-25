@@ -137,14 +137,14 @@ def collate_func(batch, tokenizer, block_size, device):
 # assume input_ids is a 2D PyTorch tensor
 def train_on_responses_only(tokenizer, input_ids):
     labels = input_ids.clone()
-    bos_token_id = "<|im_start|>"
-    eos_token_id = "<|im_end|>"
+    bos_token = "<|im_start|>"
+    eos_token = "<|im_end|>"
     for j, sequence in enumerate(input_ids):
         # Parse roles to identify which tokens to mask
         tokens = tokenizer.convert_ids_to_tokens(sequence)
         current_role = None
         for i, token in enumerate(tokens):
-            if token == bos_token_id:
+            if token == bos_token:
                 # Next token should be the role
                 if i + 1 < len(tokens):
                     role_token = tokens[i + 1]
@@ -156,9 +156,9 @@ def train_on_responses_only(tokenizer, input_ids):
             if current_role == "mask":
                 labels[j:, i] = -100
                 # Mask the last "\n"
-                if token == eos_token_id:
+                if token == eos_token:
                     labels[j:, i + 1] = -100
-            if token == eos_token_id:
+            if token == eos_token:
                 current_role = None
     return labels
 
