@@ -1,1 +1,3 @@
-# configurations for opencode
+# opencode Configuration
+
+path: ~/.config/opencode
