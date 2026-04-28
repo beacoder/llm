@@ -17,21 +17,25 @@ from datetime import datetime, timedelta
 from calendar import monthrange
 
 # ================= CONFIG =================
-TOKEN = 'XXXXXXXXXX'
+TOKEN = 'XXXXXXXXXX' 
 AUTHORIZED_USER_ID = 123456789
 
-PROXY_URL = "http://127.0.0.1:1080"
+PROXY_URL = "http://127.0.0.1:10808"
 
 TELEGRAM_MAX_LENGTH = 4000
-AGENT_SCHEDULE_FILE = os.path.expanduser("/home/huming/agent/schedule.json")
-AGENT_LOCK_FILE = os.path.expanduser("/home/huming/agent/.lock")
-AGENT_WORK_DIR = os.path.expanduser("/home/huming/agent")
-AGENT_MEDIA_DIR = os.path.expanduser("/home/huming/agent/media-file/")
+AGENT_SCHEDULE_FILE = os.path.expanduser("/Users/chenhuming/agent/schedule.json")
+AGENT_LOCK_FILE = os.path.expanduser("/Users/chenhuming/agent/.lock")
+AGENT_WORK_DIR = os.path.expanduser("/Users/chenhuming/agent")
+AGENT_MEDIA_DIR = os.path.expanduser("/Users/chenhuming/agent/media-file/")
 OPENCODE_TIMEOUT = 300
 SESSION_MARKER = os.path.join(AGENT_WORK_DIR, ".session_started")
 # =========================================
 
 CLEAR_SESSION_COMMAND = "clear"
+USE_FREE_MODEL_COMMAND = "free"
+USE_DEEPSEEK_MODEL_COMMAND = "deepseek"
+
+CURRENT_MODEL = "opencode/minimax-m2.5-free"
 
 os.makedirs(AGENT_WORK_DIR, exist_ok=True)
 os.makedirs(AGENT_MEDIA_DIR, exist_ok=True)
@@ -47,9 +51,11 @@ def clear_agent_session():
 
 async def start_agent(prompt: str) -> str:
     use_continue = os.path.exists(SESSION_MARKER)
+    model = CURRENT_MODEL
 
     cmd = [
         "opencode", "run",
+        "--model", model,
         "--dangerously-skip-permissions",
     ]
     if use_continue:
@@ -260,9 +266,22 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     prompt = update.message.text
 
-    if prompt.lower().strip() == CLEAR_SESSION_COMMAND:
+    text = prompt.lower().strip()
+
+    if text == CLEAR_SESSION_COMMAND:
         clear_agent_session()
         await send_text("✅ Session cleared. Next message starts fresh.", update)
+        return
+
+    global CURRENT_MODEL
+    if text == USE_DEEPSEEK_MODEL_COMMAND:
+        CURRENT_MODEL = "deepseek/deepseek-v4-flash"
+        await send_text(f"✅ Switched to {CURRENT_MODEL}", update)
+        return
+
+    if text == USE_FREE_MODEL_COMMAND:
+        CURRENT_MODEL = "opencode/minimax-m2.5-free"
+        await send_text(f"✅ Switched to {CURRENT_MODEL}", update)
         return
 
     open(AGENT_LOCK_FILE, "w").close()
