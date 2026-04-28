@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import subprocess
 import os
 from telegram import Update
 from telegram.ext import (
@@ -12,6 +11,7 @@ from telegram.ext import (
 )
 import logging
 import asyncio
+import shutil
 import json
 from datetime import datetime, timedelta
 from calendar import monthrange
@@ -26,18 +26,24 @@ TELEGRAM_MAX_LENGTH = 4000
 AGENT_SCHEDULE_FILE = os.path.expanduser("/home/huming/agent/schedule.json")
 AGENT_LOCK_FILE = os.path.expanduser("/home/huming/agent/.lock")
 AGENT_WORK_DIR = os.path.expanduser("/home/huming/agent")
-OPENCODE_TIMEOUT = 600
+AGENT_MEDIA_DIR = os.path.expanduser("/home/huming/agent/media-file/")
+OPENCODE_TIMEOUT = 300
 SESSION_MARKER = os.path.join(AGENT_WORK_DIR, ".session_started")
 # =========================================
 
 CLEAR_SESSION_COMMAND = "clear"
 
 os.makedirs(AGENT_WORK_DIR, exist_ok=True)
+os.makedirs(AGENT_MEDIA_DIR, exist_ok=True)
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
+
+def clear_agent_session():
+    if os.path.exists(SESSION_MARKER):
+        os.remove(SESSION_MARKER)
 
 async def start_agent(prompt: str) -> str:
     use_continue = os.path.exists(SESSION_MARKER)
@@ -100,6 +106,38 @@ async def send_text(text: str, update: Update = None, app = None):
                 chat_id=AUTHORIZED_USER_ID,
                 text=chunk)
         await asyncio.sleep(0.6)
+
+async def send_files(update: Update = None, app = None):
+    if not os.path.exists(AGENT_MEDIA_DIR):
+        return
+
+    files = sorted(
+        [os.path.join(AGENT_MEDIA_DIR, f) for f in os.listdir(AGENT_MEDIA_DIR)],
+        key=os.path.getmtime
+    )
+
+    for path in files:
+        if not os.path.isfile(path):
+            continue
+
+        try:
+            with open(path, "rb") as f:
+                if update:
+                    await update.message.reply_document(document=f)
+                elif app:
+                    await app.bot.send_document(
+                        chat_id=AUTHORIZED_USER_ID,
+                        document=f)
+        except Exception as e:
+            await send_text(f"❌ Failed to send file: {path}", update, app)
+
+def cleanup():
+    for item in os.listdir(AGENT_MEDIA_DIR):
+        item_path = os.path.join(AGENT_MEDIA_DIR, item)
+        if os.path.isdir(item_path):
+            shutil.rmtree(item_path)
+        else:
+            os.remove(item_path)
 
 def load_schedule():
     if not os.path.exists(AGENT_SCHEDULE_FILE):
@@ -166,7 +204,7 @@ def compute_next_run(task):
 
 async def run_task(task, app):
     if os.path.exists(AGENT_LOCK_FILE):
-        await send_text("⚠️ Another task running, skip", None, app)
+        await send_text("⚠️ Another task running, waiting in queue", None, app)
         return
 
     open(AGENT_LOCK_FILE, "w").close()
@@ -175,9 +213,11 @@ async def run_task(task, app):
 
     try:
         await send_text(f"🚀 Running task: {prompt}", None, app)
+        cleanup()
         await send_text("🧠 Thinking...", None, app)
         response = await start_agent(prompt)
         await send_text(response, None, app)
+        await send_files(None, app)
         await send_text("✅ Agent finished.", None, app)
     finally:
         if os.path.exists(AGENT_LOCK_FILE):
@@ -216,24 +256,23 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     if os.path.exists(AGENT_LOCK_FILE):
-        await send_text("⚠️ Another task running, waiting in queue", update)
-        while os.path.exists(AGENT_LOCK_FILE):
-            await asyncio.sleep(1)
+        await send_text("⚠️ Another task running, skip the queue", update)
 
     prompt = update.message.text
 
     if prompt.lower().strip() == CLEAR_SESSION_COMMAND:
-        if os.path.exists(SESSION_MARKER):
-            os.remove(SESSION_MARKER)
+        clear_agent_session()
         await send_text("✅ Session cleared. Next message starts fresh.", update)
         return
 
     open(AGENT_LOCK_FILE, "w").close()
 
     try:
+        cleanup()
         await send_text("🧠 Thinking...", update)
         response = await start_agent(prompt)
         await send_text(response, update)
+        await send_files(update, None)
         await send_text("✅ Agent finished.", update)
     finally:
         if os.path.exists(AGENT_LOCK_FILE):
