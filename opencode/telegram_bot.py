@@ -305,7 +305,7 @@ def main():
         .proxy(PROXY_URL)
         .connect_timeout(30)
         .read_timeout(30)
-        .get_updates_read_timeout(30)
+        .get_updates_read_timeout(60)
         .build()
     )
 
