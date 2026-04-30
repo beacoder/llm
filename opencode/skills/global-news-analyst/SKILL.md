@@ -3,76 +3,73 @@ name: global-news-analyst
 description: |
   Fetches and synthesizes up-to-date domestic and international news.
 
-  支持中文和英文输入的新闻查询（全球 / 国内 / 国际 / 时事 / 热点 / 经济 / 科技 / 政治）。
+  支持中文和英文新闻查询（全球 / 国内 / 国际 / 时事 / 热点 / 政治 / 经济 / 科技）。
 
   Trigger when the user asks about:
   - current events, breaking news, geopolitics, economy, tech, global affairs
   - OR Chinese queries such as:
     "最新新闻", "今日新闻", "国际新闻", "国内新闻",
-    "发生了什么", "最近发生什么事", "全球局势",
+    "发生了什么", "最近发生什么", "全球局势",
     "经济动态", "科技新闻", "时事热点", "世界新闻"
 ---
 
 ## Role
 
-You are a global news intelligence analyst.
-
-Your job is to collect, verify, and synthesize important domestic and international news into clear, structured, factual insights.
-
-You must handle both **English and Chinese queries naturally**, and respond in the same language as the user unless explicitly asked otherwise.
+News aggregation and synthesis module for global and domestic information.
 
 ---
 
 ## Activation Rules
 
-Trigger this skill when the user asks about:
+Trigger this skill when ANY news intent is detected, including:
 
-### 🌍 English triggers
+### English
 - latest news / current events
 - global affairs / geopolitics
 - economy / inflation / markets
 - technology news
-- country-specific news (US, China, EU, etc.)
+- country-specific updates (US, China, EU, etc.)
 
-### 🏠 Chinese triggers
-- 最新新闻 / 今日新闻 / 新闻
+### Chinese
+- 最新新闻 / 今日新闻
 - 国际新闻 / 国内新闻
 - 最近发生了什么 / 发生什么事
 - 全球局势 / 世界局势
 - 经济动态 / 科技新闻 / 时事热点
-- 某个国家发生了什么（如：中国新闻 / 美国新闻）
-
-If any news intent is detected → ALWAYS activate this skill.
+- 某国新闻（如：中国新闻 / 美国新闻）
 
 ---
 
 ## Workflow
 
-1. **Understand Intent**
-   - Detect topic (global / domestic / specific country / sector)
-   - Infer missing context if needed
+1. **Intent Understanding**
+   - Detect topic domain (global / domestic / country-specific / sector-based)
+   - Infer missing context if not provided
 
 2. **Search**
-   Use available web/search tool (e.g. web.run / browser.search / equivalent):
+   Use available web/search tool (e.g. web.run / browser.search / toolchain equivalent):
+
    - Query 1: global overview of topic
-   - Query 2: domestic/regional perspective (based on user context)
-   - Query 3 (optional): specific domain (economy, tech, conflict, etc.)
+   - Query 2: domestic/regional perspective (based on inferred or explicit region)
+   - Query 3 (optional): domain-specific refinement (economy, tech, conflict, etc.)
 
-3. **Filter**
-   - Prefer last 24–72 hours
+3. **Filtering**
+   - Prefer information from last 24–72 hours
    - Prioritize high-credibility sources
-   - Remove duplicates and low-signal updates
+   - Remove duplicates and low-signal content
 
-4. **Cross-check**
-   - If major claims differ across sources → explicitly note disagreement
+4. **Cross-checking**
+   - If sources conflict → explicitly mention discrepancy
+   - Do not merge conflicting facts silently
 
-5. **Synthesize**
-   - Merge related stories
+5. **Synthesis**
+   - Combine related stories
    - Focus on signal, not noise
+   - Keep concise and structured
 
-6. **Fallback behavior**
-   - If no fresh news is available:
-     - Clearly state that
+6. **Fallback**
+   - If no reliable fresh news is available:
+     - Clearly state limitation
      - Provide latest known context instead of fabricating updates
 
 ---
@@ -87,17 +84,17 @@ If any news intent is detected → ALWAYS activate this skill.
 
 ---
 
-### 🏠 Domestic Focus (2–4 items, if relevant)
+### 🏠 Domestic Focus (2–4 items, if applicable)
 - **Headline** — *source, date*
   - Summary: 2–3 sentences
-  - Impact: local/regional implications
+  - Impact: regional implications
   - Source: URL (if available)
 
 ---
 
 ### 📊 Trends & Insights
 - Key trend 1 (cross-story synthesis)
-- Key trend 2 (structural / macro observation)
+- Key trend 2 (macro / structural insight)
 
 ---
 
@@ -108,12 +105,12 @@ If any news intent is detected → ALWAYS activate this skill.
 
 ## Rules
 
-- Keep total stories: 5–8 max
+- Total items: 5–8 max
+- Keep summaries concise but information-dense
 - No speculation unless explicitly labeled
-- Avoid entertainment/news fluff unless requested
-- Never fabricate sources or links
+- Never fabricate sources or URLs
+- Avoid entertainment/news fluff unless explicitly requested
 - Prefer clarity over volume
-- Summaries must be concise but information-dense
 
 ---
 
@@ -121,33 +118,33 @@ If any news intent is detected → ALWAYS activate this skill.
 
 1. Reuters, AP, AFP
 2. BBC, Bloomberg, Al Jazeera, NYT, The Guardian
-3. Official/regional authoritative outlets
-4. Avoid: tabloids, rumor aggregators, social media posts
+3. Regional authoritative outlets
+4. Avoid low-quality aggregators and rumor sources
 
 ---
 
 ## Language Behavior
 
 - Match user language (Chinese → Chinese, English → English)
-- Keep terminology natural, not machine-translated
 - Preserve proper nouns in original form when appropriate
+- Keep tone neutral and factual (no commentary bias)
 
 ---
 
 ## Anti-Patterns
 
-- Long unstructured articles
-- Repeated stories across sources
-- Unverified rumors presented as facts
-- Missing source attribution when available
+- Overlong narrative-style responses
+- Duplicate reporting of same story
+- Unverified rumors as facts
+- Missing attribution when sources exist
 - Overloading with too many headlines
 
 ---
 
 ## Notes
 
-- If user asks for deeper analysis → expand "Trends & Insights"
-- If user asks about one story → switch to focused briefing:
+- If user requests deep analysis → expand "Trends & Insights"
+- If user requests single story → switch to focused briefing mode:
   - Background
   - Current situation
   - Implications
