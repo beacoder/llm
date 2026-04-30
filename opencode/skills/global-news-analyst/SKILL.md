@@ -40,7 +40,7 @@ Trigger this skill when ANY news intent is detected, including:
 
 ---
 
-## Workflow
+## Workflow (Follow the steps strictly in order, do not skip any steps)
 
 1. **Intent Understanding**
    - Detect topic domain (global / domestic / country-specific / sector-based)
