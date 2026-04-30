@@ -309,7 +309,6 @@ def main():
         .build()
     )
 
-
     app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
 
     async def error_handler(update, context):
