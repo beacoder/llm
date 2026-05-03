@@ -159,7 +159,7 @@ def is_task_due(task: dict) -> bool:
     return datetime.now() >= run_at
 
 
-def compute_next_run(task: dict) -> str | None:
+def compute_next_run(task: dict):
     repeat = task.get("repeat")
     if not repeat:
         return None
