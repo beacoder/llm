@@ -6,12 +6,16 @@ import json
 import logging
 import asyncio
 import shutil
+import fcntl
+import signal
+import sys
 from datetime import datetime, timedelta
 from calendar import monthrange
 
 from telegram import Update
 from telegram.ext import (
     ApplicationBuilder,
+    CommandHandler,
     ContextTypes,
     MessageHandler,
     filters,
@@ -21,11 +25,6 @@ from telegram.ext import (
 # CONFIG
 # ==============================================================================
 
-TOKEN = 'XXXXXXXXXX' 
-AUTHORIZED_USER_ID = 123456789
-PROXY_URL = "http://127.0.0.1:10808"
-TELEGRAM_MAX_LENGTH = 4000
-
 AGENT_HOME = os.path.expanduser("~/agent")
 AGENT_WORK_DIR = AGENT_HOME
 AGENT_MEDIA_DIR = os.path.join(AGENT_HOME, "media-file")
@@ -33,6 +32,17 @@ AGENT_LOCK_FILE = os.path.join(AGENT_HOME, ".lock")
 AGENT_SCHEDULE_FILE = os.path.join(AGENT_HOME, "schedule.json")
 SESSION_MARKER = os.path.join(AGENT_WORK_DIR, ".session_started")
 OPENCODE_TIMEOUT = 300
+
+CONFIG_FILE = os.path.join(AGENT_HOME, "config.json")
+DEFAULT_MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
+
+TOKEN = 'XXXXXXXXXX' 
+AUTHORIZED_USER_ID = 123456789
+PROXY_URL = "http://127.0.0.1:10808"
+TELEGRAM_MAX_LENGTH = 4000
+OPENCODE_TIMEOUT = 300
+MAX_FILE_SIZE = DEFAULT_MAX_FILE_SIZE
+LOG_LEVEL = "INFO"
 
 MODELS = {
     "free": "opencode/minimax-m2.5-free",
@@ -53,7 +63,7 @@ os.makedirs(AGENT_MEDIA_DIR, exist_ok=True)
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
+    level=getattr(logging, LOG_LEVEL, logging.INFO)
 )
 
 # ==============================================================================
@@ -76,17 +86,36 @@ def clear_session():
         os.remove(SESSION_MARKER)
 
 
+def sanitize_prompt(prompt: str) -> str:
+    if not prompt:
+        return ""
+    prompt = prompt.strip()
+    if len(prompt) > 10000:
+        prompt = prompt[:10000]
+    return prompt
+
+
 def has_lock() -> bool:
     return os.path.exists(AGENT_LOCK_FILE)
 
 
-def acquire_lock():
-    open(AGENT_LOCK_FILE, "w").close()
+def acquire_lock() -> bool:
+    try:
+        lock_file = open(AGENT_LOCK_FILE, "w")
+        fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        lock_file.write(str(os.getpid()))
+        lock_file.flush()
+        return True
+    except (IOError, OSError):
+        return False
 
 
 def release_lock():
-    if os.path.exists(AGENT_LOCK_FILE):
-        os.remove(AGENT_LOCK_FILE)
+    try:
+        if os.path.exists(AGENT_LOCK_FILE):
+            os.remove(AGENT_LOCK_FILE)
+    except Exception:
+        pass
 
 
 def cleanup_media():
@@ -340,6 +369,11 @@ async def handle_file(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await send_text("⚠️ Unsupported file type.", update)
         return
 
+    file_size = file_obj.file_size or 0
+    if file_size > MAX_FILE_SIZE:
+        await send_text(f"⚠️ File too large. Max: {MAX_FILE_SIZE // (1024*1024)}MB", update)
+        return
+
     try:
         file = await file_obj.get_file()
         dest_path = os.path.join(AGENT_MEDIA_DIR, file_name)
@@ -354,32 +388,62 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await send_text("❌ Unauthorized.", update)
         return
 
-    prompt = update.message.text
-    text = prompt.lower().strip()
-
-    if text == "clear":
-        clear_session()
-        await send_text("✅ Session cleared. Next message starts fresh.", update)
-        return
-
-    global current_model_key
-
-    if text == "flash":
-        current_model_key = "flash"
-        await send_text(f"✅ Switched to {MODELS['flash']}", update)
-        return
-
-    if text == "pro":
-        current_model_key = "pro"
-        await send_text(f"✅ Switched to {MODELS['pro']}", update)
-        return
-
-    if text == "free":
-        current_model_key = "free"
-        await send_text(f"✅ Switched to {MODELS['free']}", update)
+    prompt = sanitize_prompt(update.message.text)
+    if not prompt:
+        await send_text("⚠️ Empty message.", update)
         return
 
     await execute_task(prompt, update, None)
+
+
+async def handle_free(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.message.from_user.id != AUTHORIZED_USER_ID:
+        await send_text("❌ Unauthorized.", update)
+        return
+    global current_model_key
+    current_model_key = "free"
+    await send_text(f"✅ Switched to {MODELS['free']}", update)
+
+
+async def handle_flash(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.message.from_user.id != AUTHORIZED_USER_ID:
+        await send_text("❌ Unauthorized.", update)
+        return
+    global current_model_key
+    current_model_key = "flash"
+    await send_text(f"✅ Switched to {MODELS['flash']}", update)
+
+
+async def handle_pro(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.message.from_user.id != AUTHORIZED_USER_ID:
+        await send_text("❌ Unauthorized.", update)
+        return
+    global current_model_key
+    current_model_key = "pro"
+    await send_text(f"✅ Switched to {MODELS['pro']}", update)
+
+
+async def handle_clear(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.message.from_user.id != AUTHORIZED_USER_ID:
+        await send_text("❌ Unauthorized.", update)
+        return
+    clear_session()
+    await send_text("✅ Session cleared. Next message starts fresh.", update)
+
+
+async def handle_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.message.from_user.id != AUTHORIZED_USER_ID:
+        await send_text("❌ Unauthorized.", update)
+        return
+
+    await send_text(
+        "Available commands:\n"
+        "/help - Show this help\n"
+        "/clear - Clear session\n"
+        "/free / /flash / /pro - Switch model\n"
+        "Any other message - Run agent\n",
+        update
+    )
 
 
 # ==============================================================================
@@ -387,6 +451,19 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # ==============================================================================
 
 def main():
+    shutdown_event = asyncio.Event()
+
+    def signal_handler(signum, frame):
+        logging.info("Received shutdown signal, exiting...")
+        shutdown_event.set()
+
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+
+    if not TOKEN or not AUTHORIZED_USER_ID:
+        logging.error(" TOKEN and AUTHORIZED_USER_ID must be set in config.json")
+        sys.exit(1)
+
     app = (
         ApplicationBuilder()
         .token(TOKEN)
@@ -397,6 +474,11 @@ def main():
         .build()
     )
 
+    app.add_handler(CommandHandler("help", handle_help))
+    app.add_handler(CommandHandler("free", handle_free))
+    app.add_handler(CommandHandler("flash", handle_flash))
+    app.add_handler(CommandHandler("pro", handle_pro))
+    app.add_handler(CommandHandler("clear", handle_clear))
     app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
     app.add_handler(MessageHandler(
         filters.Document.ALL | filters.PHOTO | filters.VIDEO | filters.AUDIO,
