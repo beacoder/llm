@@ -1,6 +1,4 @@
-# AI 编程助手本质上是上下文窗口内的模式匹配与推理引擎
-
-# 用户需要提供的高质量上下文注入模板样例
+# Context Injection Template Example
 
 ## 📜 Step 1：项目级规则（永久上下文）
 
