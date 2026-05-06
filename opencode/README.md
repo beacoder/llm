@@ -1,8 +1,8 @@
 # AI 编程助手本质上是上下文窗口内的模式匹配与推理引擎
 
-# 下面就是用户需要提供的上下文的例子
+# 用户需要提供高质量的上下文注入模板
 
-## 📜 Step 1：项目级规则文件（静态上下文）
+## 📜 Step 1：项目级规则（静态上下文）
 
 ```markdown
 # Project Rules
@@ -31,4 +31,10 @@
 - Return `429` with `{ error: "Rate limit exceeded", retryAfter: <seconds> }`
 - Keep implementation under 60 lines
 - Tests must use `redis-mock` (see `jest.setup.js`)
+
+## Output Format
+- Changed Files: List all files to modify or create.
+- Complete Code: Provide full code in ```ts
+- Explanation: Key decisions and important notes.
+- Testing Suggestions (if applicable).
 ```
