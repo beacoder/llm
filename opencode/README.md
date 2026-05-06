@@ -2,7 +2,7 @@
 
 # 用户需要提供的高质量上下文注入模板样例
 
-## 📜 Step 1：项目级规则（静态上下文）
+## 📜 Step 1：项目级规则（永久上下文）
 
 ```markdown
 # Project Rules
@@ -13,7 +13,7 @@
 - Infra: Dockerized, rate limiting via Redis, 429 on limit exceeded
 ```
 
-## 🎯 Step 2：任务拆解（静态上下文）
+## 🎯 Step 2：任务拆解（对话输入上下文）
 
 ```markdown
 ## Task
