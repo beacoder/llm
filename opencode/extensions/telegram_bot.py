@@ -91,22 +91,12 @@ def has_lock() -> bool:
 
 
 def acquire_lock() -> bool:
-    try:
-        lock_file = open(AGENT_LOCK_FILE, "w")
-        fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-        lock_file.write(str(os.getpid()))
-        lock_file.flush()
-        return True
-    except (IOError, OSError):
-        return False
+    open(AGENT_LOCK_FILE, "w")
 
 
 def release_lock():
-    try:
-        if os.path.exists(AGENT_LOCK_FILE):
-            os.remove(AGENT_LOCK_FILE)
-    except Exception:
-        pass
+    if os.path.exists(AGENT_LOCK_FILE):
+        os.remove(AGENT_LOCK_FILE)
 
 
 def cleanup_media():
