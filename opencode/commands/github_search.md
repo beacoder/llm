@@ -1,7 +1,7 @@
 ---
 name: github_search
 arguments:
-  - name: query
+  - name: topic
   - name: number_of_results
   - name: number_of_pages
 ---
@@ -18,7 +18,7 @@ Execution rules:
 - Pagination: {{number_of_pages}}
 
 Mapping rules:
-- query = "{{query}}"
+- topic = "{{topic}}"
 - pages = {{number_of_pages}}
 - limit = {{number_of_results}}
 
