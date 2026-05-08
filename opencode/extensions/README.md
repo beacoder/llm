@@ -170,18 +170,6 @@ Current limitations include:
 - Local filesystem dependency
 - Lightweight scheduler only
 
-Future Improvements
--------------------
-
-Potential future enhancements:
-- Multi-user support
-- Streaming responses
-- Better task management
-- Web dashboard
-- Docker isolation
-- Enhanced scheduling features
-- Session management improvements
-
 Author Intent
 -------------
 
