@@ -1,4 +1,4 @@
-## OpenCode (https://opencode.ai/docs/)
+## [OpenCode]([https://example.com](https://opencode.ai/docs/)
 
 OpenCode is an open-source AI coding assistant designed for terminal-based development workflows. It provides an agent-style interface that can read, modify, and analyze codebases using large language models such as OpenAI, Anthropic, Google Gemini, and local models.
 
