@@ -1,18 +1,22 @@
-## [OpenCode](https://opencode.ai/docs)
+## 🚀 [OpenCode](https://opencode.ai/docs)
 
-OpenCode is an open-source AI coding assistant designed for terminal-based development workflows. It provides an agent-style interface that can read, modify, and analyze codebases using large language models such as OpenAI, Anthropic, Google Gemini, and local models.
+OpenCode is an open-source AI coding assistant built for modern terminal-based development workflows. It combines powerful large language models with an agent-driven coding experience capable of understanding, modifying, and navigating real-world codebases.
 
-OpenCode focuses on developer productivity by combining:
-- conversational coding assistance
-- repository-aware context handling
-- tool execution and automation
-- customizable skills and workflows
-- multi-model support
-- extensible command and agent systems
+Designed for productivity and automation, OpenCode supports multiple AI providers including OpenAI, Anthropic, Google Gemini, and local models.
 
-It is commonly used for:
-- code generation and refactoring
-- debugging and code review
-- project scaffolding
-- DevOps and scripting tasks
-- context-driven software engineering workflows
+### ✨ Features
+
+- 💬 Conversational coding assistance
+- 🧠 Repository-aware context understanding
+- ⚡ Tool execution and workflow automation
+- 🧩 Customizable skills and commands
+- 🔄 Multi-model support
+- 🛠 Extensible agent and command system
+
+### 📌 Common Use Cases
+
+- Code generation and refactoring
+- Debugging and code review
+- Project scaffolding
+- DevOps and scripting workflows
+- Context-driven software engineering tasks
