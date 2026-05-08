@@ -54,8 +54,8 @@ Discard:
 
 ## Step 6 — Ranking
 Rank remaining videos by:
-1. view count (primary)
-2. relevance score to original topic (secondary)
+1. relevance score to original topic (primary)
+2. view count (secondary)
 3. recency (tie-breaker: newer preferred)
 
 ## Step 7 — Output
