@@ -44,7 +44,7 @@ description: |
    Prefer sources published within:
    - last 24 hours for breaking developments
    - last 72 hours for broader analysis
-   - >1 week old only if essential context is missing from fresher stories
+   - 1 week older only if essential context is missing from fresher stories
 
    Recency mix: aim for ~60% ≤24h, ~30% 24-72h, ~10% context/background.
 
