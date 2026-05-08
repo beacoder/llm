@@ -20,6 +20,10 @@ description: |
     "硅谷新闻", "互联网新闻", "软件行业新闻"
 ---
 
+# Tech news aggregation and synthesis module
+
+---
+
 ## Workflow (Follow strictly in order)
 
 1. **Intent Understanding**
