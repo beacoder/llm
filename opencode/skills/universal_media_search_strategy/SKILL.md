@@ -6,7 +6,7 @@ description: |
 ---
 
 ## Step 1 — Primary Search
-- Execute initial search using raw query: "{{query}}"
+- Execute initial search using raw query: "{{query}}" with Chrome (fallback to websearch)
 - Collect results across {{pages}} pages (platform-defined pagination)
 - Normalize results into a standard schema:
   - title
