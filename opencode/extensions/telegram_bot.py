@@ -31,12 +31,10 @@ AGENT_MEDIA_DIR = os.path.join(AGENT_HOME, "media-file")
 AGENT_LOCK_FILE = os.path.join(AGENT_HOME, ".lock")
 AGENT_SCHEDULE_FILE = os.path.join(AGENT_HOME, "schedule.json")
 SESSION_MARKER = os.path.join(AGENT_WORK_DIR, ".session_started")
-OPENCODE_TIMEOUT = 300
 
-CONFIG_FILE = os.path.join(AGENT_HOME, "config.json")
 DEFAULT_MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
 
-TOKEN = 'XXXXXXXXXX' 
+TOKEN = 'XXXXXXXXXX'
 AUTHORIZED_USER_ID = 123456789
 PROXY_URL = "http://127.0.0.1:10808"
 TELEGRAM_MAX_LENGTH = 4000
@@ -50,13 +48,6 @@ MODELS = {
     "pro": "deepseek/deepseek-v4-pro",
 }
 CURRENT_MODEL_KEY = "free"
-
-COMMANDS = {
-    "clear": "clear session",
-    "free": "use free model",
-    "flash": "use flash model",
-    "pro": "use pro model",
-}
 
 os.makedirs(AGENT_WORK_DIR, exist_ok=True)
 os.makedirs(AGENT_MEDIA_DIR, exist_ok=True)
@@ -440,7 +431,9 @@ async def handle_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Available commands:\n"
         "/help - Show this help\n"
         "/clear - Clear session\n"
-        "/free / /flash / /pro - Switch model\n"
+        "/free - Use free model\n"
+        "/flash - Use deepseek-v4-flash model\n"
+        "/pro - Use deepseek-v4-pro model\n"
         "Any other message - Run agent\n",
         update
     )
