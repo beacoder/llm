@@ -13,6 +13,8 @@ description: |
     "经济动态", "科技新闻", "时事热点", "世界新闻"
 ---
 
+# Global news aggregation and synthesis module
+
 ## Workflow (Follow the steps strictly in order, do not skip any steps)
 
 1. **Intent Understanding**
