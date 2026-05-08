@@ -6,7 +6,6 @@ import json
 import logging
 import asyncio
 import shutil
-import fcntl
 import signal
 import sys
 from datetime import datetime, timedelta
