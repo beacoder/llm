@@ -6,8 +6,8 @@ import json
 import logging
 import asyncio
 import shutil
-import signal
 import sys
+from pathlib import Path
 from datetime import datetime, timedelta
 from calendar import monthrange
 
@@ -27,7 +27,6 @@ from telegram.ext import (
 AGENT_HOME = os.path.expanduser("~/agent")
 AGENT_WORK_DIR = AGENT_HOME
 AGENT_MEDIA_DIR = os.path.join(AGENT_HOME, "media-file")
-AGENT_LOCK_FILE = os.path.join(AGENT_HOME, ".lock")
 AGENT_SCHEDULE_FILE = os.path.join(AGENT_HOME, "schedule.json")
 SESSION_MARKER = os.path.join(AGENT_WORK_DIR, ".session_started")
 
@@ -61,6 +60,7 @@ logging.basicConfig(
 # ==============================================================================
 
 current_model_key = CURRENT_MODEL_KEY
+agent_lock = asyncio.Lock()
 
 
 # ==============================================================================
@@ -83,11 +83,6 @@ def sanitize_prompt(prompt: str) -> str:
     if len(prompt) > 10000:
         prompt = prompt[:10000]
     return prompt
-
-
-def release_lock():
-    if os.path.exists(AGENT_LOCK_FILE):
-        os.remove(AGENT_LOCK_FILE)
 
 
 def cleanup_media():
@@ -243,7 +238,7 @@ async def run_agent(prompt: str) -> str:
         await proc.wait()
         return "❌ Agent timed out."
 
-    open(SESSION_MARKER, "w").close()
+    Path(SESSION_MARKER).touch()
 
     output = stdout.decode().strip()
 
@@ -259,12 +254,11 @@ async def run_agent(prompt: str) -> str:
 
 
 async def execute_task(prompt: str, update: Update = None, app=None, task_info: str = None):
-    if os.path.exists(AGENT_LOCK_FILE):
-        await send_text("⚠️ Another task running, wait in queue", update, app)
+    try:
+        await asyncio.wait_for(agent_lock.acquire(), timeout=0)
+    except asyncio.TimeoutError:
+        await send_text("⚠️ Another task running, dropping this request.", update, app)
         return
-
-    open(AGENT_LOCK_FILE, "w").close()
-
     try:
         if task_info:
             await send_text(f"🚀 {task_info}", update, app)
@@ -275,7 +269,7 @@ async def execute_task(prompt: str, update: Update = None, app=None, task_info: 
         await send_text("✅ Agent finished.", update, app)
     finally:
         cleanup_media()
-        release_lock()
+        agent_lock.release()
 
 
 # ==============================================================================
@@ -425,17 +419,8 @@ async def handle_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # ==============================================================================
 
 def main():
-    shutdown_event = asyncio.Event()
-
-    def signal_handler(signum, frame):
-        logging.info("Received shutdown signal, exiting...")
-        shutdown_event.set()
-
-    signal.signal(signal.SIGINT, signal_handler)
-    signal.signal(signal.SIGTERM, signal_handler)
-
     if not TOKEN or not AUTHORIZED_USER_ID:
-        logging.error(" TOKEN and AUTHORIZED_USER_ID must be set in config.json")
+        logging.error("TOKEN and AUTHORIZED_USER_ID must be set")
         sys.exit(1)
 
     app = (
