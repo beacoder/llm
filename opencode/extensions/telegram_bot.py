@@ -32,9 +32,9 @@ SESSION_MARKER = os.path.join(AGENT_WORK_DIR, ".session_started")
 
 DEFAULT_MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
 
-TOKEN = 'XXXXXXXXXX'
-AUTHORIZED_USER_ID = 123456789
-PROXY_URL = "http://127.0.0.1:10808"
+TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+AUTHORIZED_USER_ID = int(os.getenv("AUTHORIZED_USER_ID"))
+PROXY_URL = os.getenv("PROXY_URL")
 TELEGRAM_MAX_LENGTH = 4000
 OPENCODE_TIMEOUT = 300
 MAX_FILE_SIZE = DEFAULT_MAX_FILE_SIZE
@@ -254,22 +254,21 @@ async def run_agent(prompt: str) -> str:
 
 
 async def execute_task(prompt: str, update: Update = None, app=None, task_info: str = None):
-    try:
-        await asyncio.wait_for(agent_lock.acquire(), timeout=0)
-    except asyncio.TimeoutError:
+    if agent_lock.locked():
         await send_text("⚠️ Another task running, dropping this request.", update, app)
         return
-    try:
-        if task_info:
-            await send_text(f"🚀 {task_info}", update, app)
-        await send_text("🧠 Thinking...", update, app)
-        response = await run_agent(prompt)
-        await send_text(response, update, app)
-        await send_files(update, app)
-        await send_text("✅ Agent finished.", update, app)
-    finally:
-        cleanup_media()
-        agent_lock.release()
+
+    async with agent_lock:
+        try:
+            if task_info:
+                await send_text(f"🚀 {task_info}", update, app)
+            await send_text("🧠 Thinking...", update, app)
+            response = await run_agent(prompt)
+            await send_text(response, update, app)
+            await send_files(update, app)
+            await send_text("✅ Agent finished.", update, app)
+        finally:
+            cleanup_media()
 
 
 # ==============================================================================
