@@ -13,33 +13,6 @@ description: |
     "经济动态", "科技新闻", "时事热点", "世界新闻"
 ---
 
-## Role
-
-News aggregation and synthesis module for global and domestic information.
-
----
-
-## Activation Rules
-
-Trigger this skill when ANY news intent is detected, including:
-
-### English
-- latest news / current events
-- global affairs / geopolitics
-- economy / inflation / markets
-- technology news
-- country-specific updates (US, China, EU, etc.)
-
-### Chinese
-- 最新新闻 / 今日新闻
-- 国际新闻 / 国内新闻
-- 最近发生了什么 / 发生什么事
-- 全球局势 / 世界局势
-- 经济动态 / 科技新闻 / 时事热点
-- 某国新闻（如：中国新闻 / 美国新闻）
-
----
-
 ## Workflow (Follow the steps strictly in order, do not skip any steps)
 
 1. **Intent Understanding**
