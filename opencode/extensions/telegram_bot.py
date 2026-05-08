@@ -259,7 +259,7 @@ async def run_agent(prompt: str) -> str:
 
 
 async def execute_task(prompt: str, update: Update = None, app=None, task_info: str = None):
-    if app and os.path.exists(AGENT_LOCK_FILE):
+    if os.path.exists(AGENT_LOCK_FILE):
         await send_text("⚠️ Another task running, wait in queue", update, app)
         return
 
