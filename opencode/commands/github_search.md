@@ -6,7 +6,7 @@ arguments:
   - name: number_of_pages
 ---
 
-Use skill: universal_code_search_strategy
+Use skill: universal_media_search_strategy
 
 Platform adapter: GitHub
 
