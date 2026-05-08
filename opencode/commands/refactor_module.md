@@ -1,5 +1,5 @@
 ---
-name: refactor
+name: refactor_module
 arguments:
   - name: module
   - name: goal
