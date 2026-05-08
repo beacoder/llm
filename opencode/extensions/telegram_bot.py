@@ -86,14 +86,6 @@ def sanitize_prompt(prompt: str) -> str:
     return prompt
 
 
-def has_lock() -> bool:
-    return os.path.exists(AGENT_LOCK_FILE)
-
-
-def acquire_lock() -> bool:
-    open(AGENT_LOCK_FILE, "w")
-
-
 def release_lock():
     if os.path.exists(AGENT_LOCK_FILE):
         os.remove(AGENT_LOCK_FILE)
@@ -268,11 +260,11 @@ async def run_agent(prompt: str) -> str:
 
 
 async def execute_task(prompt: str, update: Update = None, app=None, task_info: str = None):
-    if app and has_lock():
+    if app and os.path.exists(AGENT_LOCK_FILE):
         await send_text("⚠️ Another task running, wait in queue", update, app)
         return
 
-    acquire_lock()
+    open(AGENT_LOCK_FILE, "w").close()
 
     try:
         if task_info:
