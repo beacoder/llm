@@ -127,44 +127,53 @@ def is_task_due(task: dict) -> bool:
 
 
 def compute_next_run(task: dict):
-    repeat = task.get("repeat")
-    if not repeat:
-        return None
-    current_run = datetime.strptime(task["run_at"], "%Y-%m-%d %H:%M")
+    try:
+        repeat = task.get("repeat")
+        if not repeat:
+            return None
+        current_run = datetime.strptime(task["run_at"], "%Y-%m-%d %H:%M")
 
-    if repeat == "daily":
-        next_run = current_run + timedelta(days=1)
-    elif repeat.startswith("weekly:"):
-        weekday = int(repeat.split(":")[1])
-        next_run = current_run + timedelta(days=1)
-        while next_run.isoweekday() != weekday:
-            next_run += timedelta(days=1)
-    elif repeat.startswith("monthly:"):
-        day = int(repeat.split(":")[1])
-        year, month = current_run.year, current_run.month
-        month += 1
-        if month > 12:
-            month = 1
-            year += 1
-        max_day = monthrange(year, month)[1]
-        next_day = min(day, max_day)
-        next_run = current_run.replace(year=year, month=month, day=next_day)
-    elif repeat.startswith("interval:"):
-        val = repeat.split(":")[1]
-        if val.endswith("m"):
-            minutes = int(val[:-1])
-            next_run = current_run + timedelta(minutes=minutes)
-        elif val.endswith("h"):
-            hours = int(val[:-1])
-            next_run = current_run + timedelta(hours=hours)
+        if repeat == "daily":
+            next_run = current_run + timedelta(days=1)
+        elif repeat.startswith("weekly:"):
+            weekday = int(repeat.split(":")[1])
+            if not 1 <= weekday <= 7:
+                return None
+            next_run = current_run + timedelta(days=1)
+            while next_run.isoweekday() != weekday:
+                next_run += timedelta(days=1)
+        elif repeat.startswith("monthly:"):
+            day = int(repeat.split(":")[1])
+            if not 1 <= day <= 31:
+                return None
+            year, month = current_run.year, current_run.month
+            month += 1
+            if month > 12:
+                month = 1
+                year += 1
+            max_day = monthrange(year, month)[1]
+            next_day = min(day, max_day)
+            next_run = current_run.replace(year=year, month=month, day=next_day)
+        elif repeat.startswith("interval:"):
+            val = repeat.split(":")[1]
+            if val.endswith("m"):
+                minutes = int(val[:-1])
+                next_run = current_run + timedelta(minutes=minutes)
+            elif val.endswith("h"):
+                hours = int(val[:-1])
+                next_run = current_run + timedelta(hours=hours)
+            else:
+                next_run = None
         else:
             next_run = None
-    else:
-        next_run = None
 
-    if next_run:
-        return next_run.strftime("%Y-%m-%d %H:%M")
-    return None
+        if next_run:
+            return next_run.strftime("%Y-%m-%d %H:%M")
+        return None
+
+    except Exception as e:
+        logging.error(f"[schedule] compute failed: {e}")
+        return None
 
 
 # ==============================================================================
