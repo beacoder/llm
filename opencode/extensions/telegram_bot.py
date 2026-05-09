@@ -25,16 +25,20 @@ from telegram.ext import (
 # ==============================================================================
 
 AGENT_HOME = os.path.expanduser("~/agent")
-AGENT_WORK_DIR = AGENT_HOME
-AGENT_MEDIA_DIR = os.path.join(AGENT_HOME, "media-file")
+AGENT_MEDIA_DIR = os.path.join(AGENT_HOME, "media")
+AGENT_UPLOAD_DIR = os.path.join(AGENT_HOME, "upload")
 AGENT_SCHEDULE_FILE = os.path.join(AGENT_HOME, "schedule.json")
-SESSION_MARKER = os.path.join(AGENT_WORK_DIR, ".session_started")
+SESSION_MARKER = os.path.join(AGENT_HOME, ".session_started")
 
 DEFAULT_MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
 
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 AUTHORIZED_USER_ID = int(os.getenv("AUTHORIZED_USER_ID"))
 PROXY_URL = os.getenv("PROXY_URL")
+WHISPER_CPP_DIR = os.getenv("WHISPER_CPP_DIR", "")
+WHISPER_CPP_BIN = os.path.join(WHISPER_CPP_DIR, "build/bin/whisper-cli")
+WHISPER_MODEL = os.path.join(WHISPER_CPP_DIR, "models/ggml-base.bin")
+
 TELEGRAM_MAX_LENGTH = 4000
 OPENCODE_TIMEOUT = 300
 MAX_FILE_SIZE = DEFAULT_MAX_FILE_SIZE
@@ -47,8 +51,9 @@ MODELS = {
 }
 CURRENT_MODEL_KEY = "free"
 
-os.makedirs(AGENT_WORK_DIR, exist_ok=True)
+os.makedirs(AGENT_HOME, exist_ok=True)
 os.makedirs(AGENT_MEDIA_DIR, exist_ok=True)
+os.makedirs(AGENT_UPLOAD_DIR, exist_ok=True)
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -94,6 +99,16 @@ def cleanup_media():
             os.remove(item_path)
 
 
+def validate_whisper():
+    return all([
+        WHISPER_CPP_BIN,
+        WHISPER_MODEL,
+        os.path.isfile(WHISPER_CPP_BIN),
+        os.access(WHISPER_CPP_BIN, os.X_OK),
+        os.path.isfile(WHISPER_MODEL),
+    ])
+
+
 async def run_process(cmd, timeout=300, cwd=None, env=None):
     proc = await asyncio.create_subprocess_exec(
         *cmd,
@@ -109,7 +124,44 @@ async def run_process(cmd, timeout=300, cwd=None, env=None):
     except asyncio.TimeoutError:
         proc.kill()
         await proc.wait()
-        return (None, "", "Process timed out")
+        return (None, stdout, "timeout")
+
+
+def extract_file_info(message):
+    if message.document:
+        return message.document, message.document.file_name or f"document_{datetime.now().timestamp()}", False
+    if message.photo:
+        return message.photo[-1], f"photo_{datetime.now().timestamp()}", False
+    if message.video:
+        return message.video, message.video.file_name or f"video_{datetime.now().timestamp()}", False
+    if message.audio:
+        return message.audio, message.audio.file_name or f"audio_{datetime.now().timestamp()}", True
+    return None, None, False
+
+
+async def download_file(file_obj, file_name: str) -> str:
+    file = await file_obj.get_file()
+    safe_name = os.path.basename(file_name)
+    dest_path = os.path.join(AGENT_UPLOAD_DIR, safe_name)
+    await file.download_to_drive(dest_path)
+    return dest_path
+
+
+async def maybe_transcribe(file_path: str, is_audio: bool):
+    if not is_audio:
+        return None
+
+    if not validate_whisper():
+        return None
+
+    await send_text("🎙 Transcribing...")
+
+    transcript = await transcribe_audio(file_path)
+    if not transcript:
+        return None
+
+    await send_text(f"📝 Transcript:\n\n{transcript[:3000]}")
+    return transcript
 
 
 # ==============================================================================
@@ -253,7 +305,7 @@ async def run_agent(prompt: str) -> str:
     rc, stdout, stderr = await run_process(
         cmd,
         timeout=OPENCODE_TIMEOUT,
-        cwd=AGENT_WORK_DIR,
+        cwd=AGENT_HOME,
         env=env,
     )
 
@@ -325,6 +377,32 @@ async def scheduler_loop(app):
 # TELEGRAM HANDLERS
 # ==============================================================================
 
+async def transcribe_audio(file_path: str):
+    cmd = [
+        WHISPER_CPP_BIN,
+        "-m", WHISPER_MODEL,
+        "-f", file_path,
+        "--no-timestamps",
+        "--no-prints",
+    ]
+
+    rc, stdout, stderr = await run_process(
+        cmd,
+        timeout=300,
+        cwd=WHISPER_CPP_DIR,
+    )
+
+    if rc != 0:
+        logging.error(f"whisper.cpp transcription failed error (rc={rc}): {stderr}")
+        return "";
+
+    transcript = stdout.strip()
+    if not transcript:
+        return ""
+
+    return transcript
+
+
 async def handle_file(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message.from_user.id != AUTHORIZED_USER_ID:
         await send_text("❌ Unauthorized.", update)
@@ -332,36 +410,27 @@ async def handle_file(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     message = update.message
 
-    file_obj = None
-    file_name = None
+    file_obj, file_name, is_audio = extract_file_info(message)
 
-    if message.document:
-        file_obj = message.document
-        file_name = file_obj.file_name or f"document_{datetime.now().timestamp()}"
-    elif message.photo:
-        file_obj = message.photo[-1]
-        file_name = f"photo_{datetime.now().timestamp()}"
-    elif message.video:
-        file_obj = message.video
-        file_name = file_obj.file_name or f"video_{datetime.now().timestamp()}"
-    elif message.audio:
-        file_obj = message.audio
-        file_name = file_obj.file_name or f"audio_{datetime.now().timestamp()}"
-
-    if not file_obj or not file_name:
+    if not file_obj:
         await send_text("⚠️ Unsupported file type.", update)
         return
 
-    file_size = file_obj.file_size or 0
-    if file_size > MAX_FILE_SIZE:
+    if (file_obj.file_size or 0) > MAX_FILE_SIZE:
         await send_text(f"⚠️ File too large. Max: {MAX_FILE_SIZE // (1024*1024)}MB", update)
         return
 
     try:
-        file = await file_obj.get_file()
-        dest_path = os.path.join(AGENT_MEDIA_DIR, file_name)
-        await file.download_to_drive(dest_path)
-        await send_text(f"✅ File saved: {file_name}", update)
+        # 1. download
+        file_path = await download_file(file_obj, file_name)
+        await send_text(f"✅ File saved: {file_path}", update)
+
+        # 2. transcribe (optional)
+        transcript = await maybe_transcribe(file_path, is_audio)
+
+        # 3. run agent
+        if transcript:
+            await execute_task(transcript, update, None, "Running agent from transcript...")
     except Exception as e:
         await send_text(f"❌ Failed to download file: {e}", update)
 
