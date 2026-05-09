@@ -94,6 +94,24 @@ def cleanup_media():
             os.remove(item_path)
 
 
+async def run_process(cmd, timeout=300, cwd=None, env=None):
+    proc = await asyncio.create_subprocess_exec(
+        *cmd,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+        env=env,
+        cwd=cwd
+    )
+
+    try:
+        stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=timeout)
+        return (proc.returncode, stdout.decode().strip(), stderr.decode().strip())
+    except asyncio.TimeoutError:
+        proc.kill()
+        await proc.wait()
+        return (None, "", "Process timed out")
+
+
 # ==============================================================================
 # SCHEDULER
 # ==============================================================================
@@ -232,34 +250,25 @@ async def run_agent(prompt: str) -> str:
     env["HTTP_PROXY"] = PROXY_URL
     env["HTTPS_PROXY"] = PROXY_URL
 
-    proc = await asyncio.create_subprocess_exec(
-        *cmd,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
+    rc, stdout, stderr = await run_process(
+        cmd,
+        timeout=OPENCODE_TIMEOUT,
+        cwd=AGENT_WORK_DIR,
         env=env,
-        cwd=AGENT_WORK_DIR
     )
 
-    try:
-        stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=OPENCODE_TIMEOUT)
-    except asyncio.TimeoutError:
-        proc.kill()
-        await proc.wait()
+    if rc is None:
         return "❌ Agent timed out."
 
     Path(SESSION_MARKER).touch()
 
-    output = stdout.decode().strip()
+    if rc != 0 and stderr:
+        logging.error(f"opencode error (rc={rc}): {stderr}")
 
-    if proc.returncode != 0:
-        error_output = stderr.decode().strip()
-        if error_output:
-            logging.error(f"opencode error (rc={proc.returncode}): {error_output}")
-
-    if not output:
+    if not stdout:
         return "⚠️ Agent returned empty response."
 
-    return output
+    return stdout
 
 
 async def execute_task(prompt: str, update: Update = None, app=None, task_info: str = None):
