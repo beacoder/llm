@@ -36,8 +36,8 @@ TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 AUTHORIZED_USER_ID = int(os.getenv("AUTHORIZED_USER_ID"))
 PROXY_URL = os.getenv("PROXY_URL")
 WHISPER_CPP_DIR = os.path.expanduser(os.getenv("WHISPER_CPP_DIR", ""))
+WHISPER_MODEL = os.path.expanduser(os.getenv("WHISPER_MODEL", ""))
 WHISPER_CPP_BIN = os.path.join(WHISPER_CPP_DIR, "build/bin/whisper-cli")
-WHISPER_MODEL = os.path.join(WHISPER_CPP_DIR, "models/ggml-small.bin")
 
 TELEGRAM_MAX_LENGTH = 4000
 OPENCODE_TIMEOUT = 300
