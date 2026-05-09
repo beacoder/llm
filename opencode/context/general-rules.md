@@ -2,7 +2,7 @@
 
 ## Directory Configuration
 - Default Search Path: /Users/chenhuming/agent/
-- Default Path for storing pictures/videos/... files: /Users/chenhuming/agent/media-file/
+- Default Path for storing pictures/videos/... files: /Users/chenhuming/agent/media/
 - Forbidden Path: /mnt/ (no read/write/modify is allowed for this path)
 
 ## Coding Standards
