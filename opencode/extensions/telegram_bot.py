@@ -35,7 +35,7 @@ DEFAULT_MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 AUTHORIZED_USER_ID = int(os.getenv("AUTHORIZED_USER_ID"))
 PROXY_URL = os.getenv("PROXY_URL")
-WHISPER_CPP_DIR = os.getenv("WHISPER_CPP_DIR", "")
+WHISPER_CPP_DIR = os.path.expanduser(os.getenv("WHISPER_CPP_DIR", ""))
 WHISPER_CPP_BIN = os.path.join(WHISPER_CPP_DIR, "build/bin/whisper-cli")
 WHISPER_MODEL = os.path.join(WHISPER_CPP_DIR, "models/ggml-base.bin")
 
@@ -133,9 +133,13 @@ def extract_file_info(message):
     if message.photo:
         return message.photo[-1], f"photo_{datetime.now().timestamp()}", False
     if message.video:
-        return message.video, message.video.file_name or f"video_{datetime.now().timestamp()}", False
+        file_name = getattr(message.video, "file_name", None)
+        return message.video, file_name or f"video_{datetime.now().timestamp()}", False
     if message.audio:
-        return message.audio, message.audio.file_name or f"audio_{datetime.now().timestamp()}", True
+        file_name = getattr(message.video, "file_name", None)
+        return message.audio, file_name or f"audio_{datetime.now().timestamp()}", False
+    if message.voice:
+        return message.voice, f"voice_{datetime.now().timestamp()}.ogg", True
     return None, None, False
 
 
@@ -147,21 +151,48 @@ async def download_file(file_obj, file_name: str) -> str:
     return dest_path
 
 
-async def maybe_transcribe(file_path: str, is_audio: bool):
-    if not is_audio:
+async def convert_to_wav(input_path: str) -> str:
+    output_path = input_path.rsplit(".", 1)[0] + ".wav"
+
+    cmd = [
+        "ffmpeg",
+        "-y",
+        "-i", input_path,
+        "-ar", "16000",
+        "-ac", "1",
+        output_path
+    ]
+
+    rc, _, stderr = await run_process(cmd, timeout=60)
+
+    if rc != 0:
+        logging.error(f"ffmpeg failed: {stderr}")
+        return None
+
+    os.remove(input_path)
+    return output_path
+
+
+async def maybe_transcribe(file_path: str, is_voice: bool, update: Update):
+    if not is_voice:
         return None
 
     if not validate_whisper():
         return None
 
-    await send_text("🎙 Transcribing...")
+    await send_text("🎙 Transcribing...", update)
 
-    transcript = await transcribe_audio(file_path)
+    if file_path.endswith(".ogg"):
+        file_path = await convert_to_wav(file_path)
+
+    if file_path:
+        transcript = await transcribe_voice(file_path)
+
     if not transcript:
         return None
 
     os.remove(file_path)
-    await send_text(f"📝 Transcript:\n\n{transcript[:3000]}")
+    await send_text(f"📝 Transcript:\n{transcript[:3000]}", update)
     return transcript
 
 
@@ -378,7 +409,7 @@ async def scheduler_loop(app):
 # TELEGRAM HANDLERS
 # ==============================================================================
 
-async def transcribe_audio(file_path: str):
+async def transcribe_voice(file_path: str):
     cmd = [
         WHISPER_CPP_BIN,
         "-m", WHISPER_MODEL,
@@ -409,9 +440,7 @@ async def handle_file(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await send_text("❌ Unauthorized.", update)
         return
 
-    message = update.message
-
-    file_obj, file_name, is_audio = extract_file_info(message)
+    file_obj, file_name, is_voice = extract_file_info(update.message)
 
     if not file_obj:
         await send_text("⚠️ Unsupported file type.", update)
@@ -427,7 +456,7 @@ async def handle_file(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await send_text(f"✅ File saved: {file_path}", update)
 
         # 2. transcribe (optional)
-        transcript = await maybe_transcribe(file_path, is_audio)
+        transcript = await maybe_transcribe(file_path, is_voice, update)
 
         # 3. run agent
         if transcript:
@@ -527,7 +556,7 @@ def main():
     app.add_handler(CommandHandler("clear", handle_clear))
     app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
     app.add_handler(MessageHandler(
-        filters.Document.ALL | filters.PHOTO | filters.VIDEO | filters.AUDIO,
+        filters.Document.ALL | filters.PHOTO | filters.VIDEO | filters.AUDIO | filters.VOICE,
         handle_file
     ))
 
