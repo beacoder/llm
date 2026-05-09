@@ -1,9 +1,31 @@
 ---
 name: universal_media_search_strategy
 description: |
-  A platform-agnostic strategy for searching, expanding, filtering, and ranking media content (videos/articles/posts) from any source.
-  Can be used for YouTube, web search, social media, or forum-based search systems.
+  Use this skill when searching for videos, articles, social posts,
+  discussions, reviews, tutorials, guides, or other media content
+  across multiple platforms.
+
+  Especially useful for:
+  - finding high-quality learning resources
+  - collecting opinions or discussions
+  - discovering tutorials or explainers
+  - researching topics across multiple sources
+  - aggregating media results from heterogeneous platforms
+
+  Performs:
+  - iterative search
+  - query expansion
+  - semantic filtering
+  - deduplication
+  - relevance ranking
+
+  Returns normalized, ranked, platform-independent results.
 ---
+
+arguments:
+  - name: query
+  - name: limit
+  - name: pages
 
 ## Step 1 — Primary Search
 - Execute initial search using raw query: "{{query}}" with Chrome (fallback to websearch)
