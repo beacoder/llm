@@ -160,6 +160,7 @@ async def maybe_transcribe(file_path: str, is_audio: bool):
     if not transcript:
         return None
 
+    os.remove(file_path)
     await send_text(f"📝 Transcript:\n\n{transcript[:3000]}")
     return transcript
 
