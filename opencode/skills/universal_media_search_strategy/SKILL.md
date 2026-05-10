@@ -23,12 +23,12 @@ description: |
 ---
 
 arguments:
-  - name: query
+  - name: topic
   - name: limit
   - name: pages
 
 ## Step 1 — Primary Search
-- Execute initial search using raw query: "{{query}}" with Chrome (fallback to websearch)
+- Execute initial search using raw query: "{{topic}}" with Chrome (fallback to websearch)
 - Collect results across {{pages}} pages (platform-defined pagination)
 - Normalize results into a standard schema:
   - title
