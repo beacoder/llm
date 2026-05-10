@@ -23,7 +23,7 @@ Execution rules:
   - date → upload date
 
 Parameters mapping:
-- query = "{{topic}}"
+- topic = "{{topic}}"
 - pages = {{number_of_pages}}
 - limit = {{number_of_videos}}
 
