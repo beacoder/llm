@@ -1,5 +1,6 @@
 ---
 name: sync_remote
+arguments:
   - name: skill_url
   - name: command_url
 ---
