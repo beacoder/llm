@@ -27,6 +27,10 @@ arguments:
   - name: limit
   - name: pages
 
+default values:
+  - limit: 5
+  - pages: 5
+
 ## Step 1 — Primary Search
 - Execute initial search using raw query: "{{topic}}" with Chrome (fallback to websearch)
 - Collect results across {{pages}} pages (platform-defined pagination)
@@ -40,7 +44,7 @@ arguments:
 
 ## Step 2 — Failure Detection
 Trigger fallback if:
-- results < {{min_results}}
+- results < {{limit}}
 - low relevance density
 - too many duplicates or near-duplicates
 
