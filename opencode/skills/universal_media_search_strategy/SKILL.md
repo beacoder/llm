@@ -82,4 +82,4 @@ Rank by:
 3. recency
 
 ## Step 7 — Output
-Return top {{limit}} normalized results.
+Return top {{limit}} normalized results in a table.
