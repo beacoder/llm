@@ -13,7 +13,7 @@ arguments:
 ## workflow
 - For each file in remote:
   - Download to temp file
-  - Compare with local verion
+  - Compare with local version
     - If identical → skip
     - If different or missing → replace
 
