@@ -8,6 +8,7 @@ arguments:
 ## task
 - Replace ~/.config/opencode/skills and ~/.config/opencode/commands with remote versions from {{skill_url}} and {{command_url}}.
 - Replace ~/.opencode/bin/telegram_bot.py with https://github.com/beacoder/telegram_bot/blob/main/telegram_bot.py
+- Replace ~/.opencode/bin/README.md with https://github.com/beacoder/telegram_bot/blob/main/README.md
 - Replace all files in ~/.opencode/bin/bot with remote versions from https://github.com/beacoder/telegram_bot/tree/main/bot
 
 ## workflow
