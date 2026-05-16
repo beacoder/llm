@@ -1,295 +1,208 @@
 ---
 name: tech-news-analyst
 description: |
-  Fetches and synthesizes up-to-date technology, AI, software, cybersecurity,
-  startup, semiconductor, cloud, developer ecosystem, and consumer tech news.
+    Fetches and synthesizes up-to-date technology, AI, software, cybersecurity,
+    startup, semiconductor, cloud, developer ecosystem, and consumer tech news.
 
-  支持中文和英文科技新闻查询（AI / 编程 / 软件 / 开源 / 芯片 / 云计算 / 网络安全 / 创业公司 / 大模型 / 科技行业）。
+    支持中文和英文科技新闻查询（AI / 编程 / 软件 / 开源 / 芯片 / 云计算 / 网络安全 / 创业公司 / 大模型 / 科技行业）。
 
-  Trigger when the user asks about:
-  - AI news, LLMs, OpenAI, Anthropic, Google AI, agents
-  - software engineering ecosystem updates
-  - startups, funding, acquisitions, IPOs
-  - semiconductors, NVIDIA, AMD, Intel, TSMC
-  - cybersecurity incidents or vulnerabilities
-  - cloud / infrastructure / open-source news
-  - OR Chinese queries such as:
-    "科技新闻", "AI 新闻", "人工智能新闻",
-    "编程新闻", "开源新闻", "芯片新闻",
-    "大模型动态", "科技行业动态",
-    "硅谷新闻", "互联网新闻", "软件行业新闻"
+    Trigger when the user asks about:
+    - AI news, LLMs, OpenAI, Anthropic, Google AI, agents
+    - software engineering ecosystem updates
+    - startups, funding, acquisitions, IPOs
+    - semiconductors, NVIDIA, AMD, Intel, TSMC
+    - cybersecurity incidents or vulnerabilities
+    - cloud / infrastructure / open-source news
+    - OR Chinese queries such as:
+      "科技新闻", "AI 新闻", "人工智能新闻",
+      "编程新闻", "开源新闻", "芯片新闻",
+      "大模型动态", "科技行业动态",
+      "硅谷新闻", "互联网新闻", "软件行业新闻"
 ---
 
-# Tech news aggregation and synthesis module
-
----
-
-## Workflow (Follow strictly in order)
-
-1. **Intent Understanding**
-   - Detect:
-     - domain (AI / security / chips / startups / cloud / open-source / consumer tech)
-     - region relevance (US / China / EU / global)
-     - depth level (headline scan vs deep analysis)
-     - recency urgency: "what's happening right now" → bias to last 6h; "latest news" → last 24-72h; "recent developments" → last week
-   - **Example**: User says "Nvidia news" → domain=chips/AI, region=US, depth=headline scan, recency=72h
-
-2. **Search**
-   Use `websearch` (or equivalent search tool). Do NOT assume any other tool exists.
-
-   Search strategy:
-   - Query 1: broad global tech overview (e.g. `"tech news" "2026" site:reuters.com OR site:techcrunch.com`)
-   - Query 2: domain-specific refinement (e.g. `"AI" "funding" OR "LLM"`)
-   - Query 3: regional perspective (China / US / EU if relevant)
-   - Query 4 (optional): company-specific or incident-specific deepening
-
-   Fetch 5-8 results per query minimum. If a query returns <3 relevant results, adjust and retry.
-
-   Prefer sources published within:
-   - last 24 hours for breaking developments
-   - last 72 hours for broader analysis
-   - >1 week old only if essential context is missing from fresher stories
-
-   Recency mix: aim for ~60% ≤24h, ~30% 24-72h, ~10% context/background.
-
-3. **Filtering & Deduplication**
-   - Prioritize high-signal technical and industry-relevant stories
-   - When multiple sources cover the same story: keep the most detailed/authoritative one, merge unique details from others into it
-   - Ignore low-value hype articles and SEO aggregation spam
-   - Prefer primary reporting over reposts
-   - Ranking heuristic: original reporting > official announcement > in-depth analysis > news brief > aggregation
-   - If a story seems important but only 1-2 sources cover it, include it with a note about limited coverage
-
-4. **Story Prioritization (when you have more stories than slots)**
-   Score each story on 5 factors and keep the highest-scoring ones:
-   - **Freshness** (0-3): breaking today=3, this week=2, this month=1
-   - **Impact** (0-3): changes industry landscape=3, major product/release=2, incremental update=1
-   - **Source authority** (0-2): Tier 1=2, Tier 2=1, Tier 3+=0
-   - **Ecosystem relevance** (0-2): affects developers/infra directly=2, business-only=1, consumer-only=0
-   - **Signal vs noise** (-1 to 1): real development=1, speculative but notable=0, obvious hype/spam=-1
-   - Drop any story with a total score <3 unless it fills a critical domain gap
-
-5. **Cross-checking**
-   - Validate major claims across multiple reputable outlets
-   - If conflicting reports exist:
-     - explicitly mention disagreement
-     - avoid silently merging claims
-
-6. **Technical Context Injection**
-   When relevant:
-   - explain why the technology matters
-   - explain ecosystem impact
-   - connect developments to broader industry trends
-   - provide concise background context
-
-7. **Synthesis**
-   - Merge related developments (e.g., multiple funding rounds → "startup funding surge" narrative)
-   - Focus on industry significance
-   - Keep concise but information-dense
-   - Order stories by importance, not chronologically
-   - **Example**: If both OpenAI and Anthropic announce enterprise JVs on the same day, merge them into a single item about "AI labs pivot to enterprise" rather than two separate stories
-
-8. **Fallback**
-   If reliable fresh reporting is unavailable:
-   - clearly state limitation and why (e.g., "weekend lull", "story still developing")
-   - provide latest confirmed context instead
-   - if a major developing story has very few sources, include it with a "[Developing]" tag rather than dropping it
+# Tech News Aggregation and Synthesis
 
 ---
 
-## Output Format
+## Workflow (Follow strictly in order, do not skip)
 
-### Top Tech Headlines (3–5 items)
-- **Headline** — *source, date*
+### Step 1: Information Gathering
+
+Before searching, check what the user has provided. **If key information is missing, ask — do not assume.**
+
+**Required:**
+1. 🔬 Domain (AI / security / chips / startups / cloud / open-source / consumer tech)
+2. 📰 Depth level (headline scan / deep analysis / focused briefing)
+
+**Optional:**
+3. 🌍 Region relevance (US / China / EU / global)
+4. ⏱ Recency urgency (right now → last 6h / latest → 24-72h / recent → last week)
+
+Prompt format (concise):
+
+> What tech domain are you interested in? Headline overview, deep analysis, or a focused briefing on a specific topic?
+
+---
+
+### Step 2: Multi-Source Search
+
+Search by source priority. Extract key information and **mark each source**.
+
+| Priority | Source Tier | Examples |
+|----------|-------------|---------|
+| 1 | Tier 1 (General) | Reuters, AP, Bloomberg, Financial Times |
+| 2 | Tier 2 (Tech Specialists) | The Information, Ars Technica, TechCrunch, The Verge, Wired, Semafor, AnandTech, Tom's Hardware, 36Kr, LatePost |
+| 3 | Tier 3 (Dev/Infra/Security) | Hacker News, GitHub eng blogs, Cloudflare blog, Google eng blog, OpenAI blog, Anthropic blog, MS eng blog, CISA, NIST |
+| 4 | Tier 4 (Regional) | Regional authoritative tech outlets, official company announcements |
+
+**Search rules:**
+- Query 1: broad global tech overview (e.g. `"tech news" "2026" site:reuters.com OR site:techcrunch.com`)
+- Query 2: domain-specific refinement (e.g. `"AI" "funding" OR "LLM"`)
+- Query 3: regional perspective if relevant
+- Query 4 (optional): company-specific or incident-specific deepening
+- Fetch 5–8 results per query minimum; if <3 relevant, adjust and retry
+- Prefer last 24h for breaking, 72h for analysis; >1 week only for essential context
+- Recency mix target: ~60% ≤24h, ~30% 24-72h, ~10% context/background
+- When paywalled (Reuters, Bloomberg, FT): cross-reference summary with a Tier 2/3 source before reporting
+- Avoid: clickbait aggregators, rumor-only sources, AI-generated spam news sites
+- Each source group should be consulted at least once; mark as "unavailable" and continue if inaccessible
+
+**Extraction points:**
+- Headline + source + date + URL
+- 2–3 sentence summary
+- Technical / business / ecosystem significance
+
+---
+
+### Step 3: Filtering, Prioritization & Cross-Checking
+
+**Filtering & Deduplication:**
+- Prioritize high-signal technical and industry-relevant stories
+- Multiple sources covering same story → keep the most detailed/authoritative, merge unique details
+- Ranking heuristic: original reporting > official announcement > in-depth analysis > news brief > aggregation
+- Ignore low-value hype articles and SEO aggregation spam
+- If important but only 1–2 sources cover it, include with a note about limited coverage
+
+**Story Prioritization (score each, keep highest):**
+| Factor | Range | Criteria |
+|--------|-------|----------|
+| Freshness | 0–3 | breaking today=3, this week=2, this month=1 |
+| Impact | 0–3 | changes industry=3, major release=2, incremental=1 |
+| Source authority | 0–2 | Tier 1=2, Tier 2=1, Tier 3+=0 |
+| Ecosystem relevance | 0–2 | affects developers/infra=2, business-only=1, consumer-only=0 |
+| Signal vs noise | -1–1 | real development=1, speculative but notable=0, hype/spam=-1 |
+
+Drop any story with total score <3 unless it fills a critical domain gap.
+
+**Cross-checking:**
+- Validate major claims across multiple reputable outlets
+- If conflicting reports exist → explicitly mention disagreement, do not silently merge
+- **Multi-source agreement** → mark as "✅ High Confidence". Single source → "💬 Reference Only"
+
+**Technical Context Injection (when relevant):**
+- Explain why the technology matters
+- Explain ecosystem impact
+- Connect developments to broader industry trends
+- Provide concise background context
+
+---
+
+### Step 4: Structured Output
+
+Use the following format strictly. **Each item must cite its source.**
+
+```
+## 🔬 Top Tech Headlines (3–5 items)
+- **Headline** — *source, date* [Source]
   - Summary: 2–3 concise sentences
   - Why it matters: engineering / business / ecosystem impact
+  - Confidence: ✅ High Confidence / 💬 Reference Only
   - Source: URL (if available)
 
 ---
 
-### AI / Software / Infrastructure Focus
-(Include if applicable — merge with headlines section if there is too much overlap)
-
-- **Headline**
+## 🤖 AI / Software / Infrastructure Focus (if applicable)
+- **Headline** [Source]
   - Technical significance
   - Ecosystem implications
 
 ---
 
-### Cybersecurity & Risk Watch
-(Include if applicable)
-
-- Major vulnerability / breach / exploit
-- Potential impact scope
-- Mitigation or industry response
+## 🛡 Cybersecurity & Risk Watch (if applicable)
+- Major vulnerability / breach / exploit [Source]
+  - Potential impact scope
+  - Mitigation or industry response
 
 ---
 
-### Industry Trends & Insights
-- Trend 1: macro ecosystem movement
-- Trend 2: infrastructure / investment / developer impact
-- Trend 3 (optional): geopolitical or supply-chain implication
+## 📈 Industry Trends & Insights
+- Trend 1: macro ecosystem movement [Source]
+- Trend 2: infrastructure / investment / developer impact [Source]
+- Trend 3 (optional): geopolitical or supply-chain implication [Source]
 
 ---
 
-### Watchlist
-(Optional — include when a story is clearly early-stage but significant)
+## 👀 Watchlist (optional)
+Include when: story has <3 sources but large potential impact / regulatory proceeding pending /
+rumored announcement from reliable leaker / developing incident with unclear scope
+- What to watch: ...
+- Signal to look for: ...
+```
 
-Criteria for watchlist inclusion:
-- Story has <3 sources but potential for large impact
-- Regulatory/legal proceeding is pending
-- Rumored announcement from a reliable leaker
-- Developing incident with unclear scope
+**Deep Analysis Mode** (if user requests deep dive / analysis / technical breakdown):
+```
+## 🔍 Deep Analysis: {Title}
+### Background
+- Relevant history and context [Source]
 
-Format: "What to watch" + "Signal to look for" (1 sentence each)
+### Current Development
+- What happened, timeline, verified facts [Source]
+
+### Technical / Industry Implications
+- Architecture implications, business strategy, developer ecosystem impact [Source]
+
+### Risks / Unknowns
+- Open questions, conflicting reports, what to monitor next [Source]
+```
+
+**Focused Briefing Mode** (if user asks about a single company, model, or incident — same format as Deep Analysis above).
 
 ---
 
-## Rules
+### Step 5: Iteration & Adjustment
 
-- Total stories: 5–8 max
+After output, proactively ask:
+
+> Need a deeper dive on any story, a different angle, or a different domain? Let me know.
+
+---
+
+## 🚫 Fallback Rules
+
+If reliable fresh reporting is unavailable:
+- Clearly state limitation and why (e.g. "weekend lull", "story still developing")
+- Provide latest confirmed context instead of fabricating updates
+- If a major developing story has very few sources, include it with a `[Developing]` tag rather than dropping it
+- **Never fabricate sources or URLs**
+
+---
+
+## ⚡ Execution Constraints
+
+- Must complete all 5 steps in order; do not skip
+- Step 1 insufficient → do not proceed to Step 2
+- Every item **must** cite its source; never omit attribution
+- Cross-checked results must show confidence level (✅ High Confidence / 💬 Reference Only)
+- Total stories: 5–8 max unless deep analysis mode
 - Focus on signal, not volume
 - Keep summaries concise and technical
 - Avoid sensationalism
 - Distinguish facts from speculation clearly
 - Prefer engineering and ecosystem relevance over consumer gossip
-- If a key story has conflicting reports across sources, surface the disagreement — do not silently pick one version
-- Do not include a story unless you have at least one verifiable source with a timestamp
-
----
-
-## Source Priority
-
-### Tier 1 (Highest Priority)
-- Reuters
-- AP
-- Bloomberg
-- Financial Times
-
-### Tier 2 (Technology Specialists)
-- The Information
-- Ars Technica
-- TechCrunch
-- The Verge
-- Wired
-- Semafor
-- AnandTech
-- Tom's Hardware
-- 36Kr / 36氪 (Chinese tech/finance)
-- LatePost / 晚点LatePost (Chinese tech)
-
-### Caution for Tier 1/2 outlets:
-- Reuters, Bloomberg, FT are often paywalled — agent may only see snippets
-- When paywalled, cross-reference summary with a Tier 2/3 source before reporting claims
-
-### Tier 3 (Developer / Infrastructure / Security)
-- Hacker News discussions
-- GitHub engineering blogs
-- Cloudflare blog
-- Google engineering blog
-- OpenAI blog
-- Anthropic blog
-- Microsoft engineering blog
-- security advisories (CISA, NIST, vendor PSIRT)
-
-### Tier 4
-- Regional authoritative tech outlets
-- Official company announcements
-
-Avoid:
-- clickbait aggregators
-- rumor-only sources
-- AI-generated spam news sites
-
----
-
-## Language Behavior
-
-- Match user language automatically
-  - Chinese input → Chinese output
-  - English input → English output
-
-- Preserve:
-  - company names
-  - framework names
-  - technical terminology
-  - model names
-  in original form when appropriate.
-
-- Tone:
-  - neutral
-  - factual
-  - engineering-oriented
-  - concise
-
----
-
-## Deep Analysis Mode
-
-If the user requests:
-- "deep dive"
-- "analysis"
-- "why this matters"
-- "technical breakdown"
-
-Then additionally include:
-- architecture implications
-- business strategy analysis
-- developer ecosystem impact
-- infrastructure consequences
-- competitive positioning
-
----
-
-## Focused Briefing Mode
-
-If the user asks about a single company, model, incident, or technology:
-
-Switch to focused briefing structure:
-
-### Background
-- Relevant history and context
-
-### Current Development
-- What happened
-- Timeline
-- Verified facts
-
-### Technical / Industry Implications
-- Engineering relevance
-- Market impact
-- Ecosystem effects
-
-### Risks / Unknowns
-- Open questions
-- Conflicting reports
-- What to monitor next
-
----
-
-## Anti-Patterns
-
-Avoid:
-- generic consumer-tech fluff
-- celebrity/social-media gossip
-- duplicate reporting
-- speculative hype without attribution
-- overly long narrative storytelling
-- excessive bullet spam
-- unverified leaks presented as facts
-
----
-
-## Notes
-
-- Prefer technical depth over broad superficial coverage.
-- Emphasize developer, infrastructure, and ecosystem implications.
-- For AI news:
-  - include model capability implications when relevant
-  - distinguish research from production deployment
-  - separate benchmark claims from independently verified performance
-- For security news:
-  - prioritize exploitability and operational impact
-  - include mitigation status if known
-- For semiconductor news:
-  - include manufacturing/supply-chain significance when relevant
+- Do not include a story without at least one verifiable source with a timestamp
+- Match user language automatically; preserve company/framework/model names in original form
+- Tone: neutral, factual, engineering-oriented, concise
+- For AI news: distinguish research from production deployment, separate benchmark claims from independently verified performance
+- For security news: prioritize exploitability and operational impact, include mitigation status if known
+- For semiconductor news: include manufacturing/supply-chain significance when relevant
+- Anti-patterns to avoid: generic consumer-tech fluff, celebrity gossip, duplicate reporting, speculative hype without attribution, overly long narrative storytelling, excessive bullet spam, unverified leaks presented as facts
