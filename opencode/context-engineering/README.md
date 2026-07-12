@@ -1,4 +1,4 @@
-# Context Injection Template Example
+# Context Engineering Example
 
 ## 📜 Step 1：项目级规则（Project Context）
 
