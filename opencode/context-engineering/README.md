@@ -1,6 +1,6 @@
 # Context Injection Template Example
 
-## 📜 Step 1：项目级规则（永久上下文）
+## 📜 Step 1：项目级规则（Project Context）
 
 ```markdown
 # Project Rules
@@ -11,7 +11,7 @@
 - Infra: Dockerized, rate limiting via Redis, 429 on limit exceeded
 ```
 
-## 🎯 Step 2：任务拆解（对话输入上下文）
+## 🎯 Step 2：任务拆解（Task Context）
 
 ```markdown
 ## Task
